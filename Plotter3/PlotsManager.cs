@@ -25,7 +25,7 @@ namespace Plotter3
         private float leftX, rightX;        
         private Object thisLock = new Object();        
         private Control c;
-        private Matrix m;
+        private Matrix m = new Matrix();
         private Timer wheelEndTimer = new Timer();
 
         string PLOTTER_TRANSFORM_REGKEY;
@@ -41,13 +41,11 @@ namespace Plotter3
             c.Paint += C_Paint;
             c.MouseMove += C_MouseMove;
             c.MouseUp += C_MouseUp;
-            c.MouseWheel += C_MouseWheel;
-            c.PreviewKeyDown += C_PreviewKeyDown;            
+            c.MouseWheel += C_MouseWheel;            
+            c.KeyDown += C_KeyDown;            
 
             wheelEndTimer.Interval = 30;
-            wheelEndTimer.Tick += WheelEndTimer_Tick;
-
-            axises.Add(new Axises());
+            wheelEndTimer.Tick += WheelEndTimer_Tick;            
         }
 
         private void UpdatePlots()
@@ -85,6 +83,11 @@ namespace Plotter3
             //drawing plots
             DrawPlots(g, m);
         }               
+
+        public void HandleControlKeyDown(Control control)
+        {
+            control.KeyDown += C_KeyDown;
+        }
 
         public void DrawPlots(Graphics g, Matrix m)
         {
@@ -207,8 +210,8 @@ namespace Plotter3
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message, "Matrix Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //MessageBox.Show(e.Message, "Matrix Error",
+                //    MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                 resetMatrix();
             }
@@ -283,13 +286,16 @@ namespace Plotter3
                     CreatePlotFromFile(p.path, p.color, p.signalCode);
                 }));
             Parallel.Invoke(actions.ToArray());
+            ResetLeftAndRightX();
+            UpdateViewRange(leftX, rightX);
+            c.Invalidate();
         }
 
         public void CreatePlotFromFile(PlotParams par)
         {
             // Ahah :)
             //it looks funny))
-            CreatePlotFromFile(par.path, par.color, par.signalCode, par.averageLineOn);
+            CreatePlotFromFile(par.path, par.color, par.signalCode, par.averageLineOn);            
         }
 
         public void CreatePlotFromFile(string path, Color c, byte signalCode, bool averageLineOn = true)
@@ -324,9 +330,11 @@ namespace Plotter3
                 Plot plot = new Plot(points, min, max, c);
                 plot.averagePointOn = averageLineOn;
                 plots.Add(plot);
-            }
-
-            restartMatrix();
+                
+                if (axises.Count == 0) axises.Add(new Axises());
+                restartMatrix();
+                this.c.Invalidate();                
+            }            
         }
         #endregion
 
@@ -365,7 +373,7 @@ namespace Plotter3
         #endregion
 
         #region KeyboardListener
-        private void C_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        private void C_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
