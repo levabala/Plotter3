@@ -7,44 +7,87 @@ using System.Drawing;
 
 namespace Plotter3
 {
+    [Serializable]
     class Plot
     {
         public PointF[] pointsToDraw = new PointF[0];        
         public Color color;
+        public float xRange, yRange;
+        public PointF[] averagePoints;
+        [NonSerialized]        
+        public bool averagePointOn = true;
+        public int ActiveLayerIndex;
+        public List<PointF[]> layers;
+        public float minValue, maxValue;
 
-        List<List<PointF>> layers;               
-        int minPointsCount = 2000;        
-        float minValue, maxValue;
+        int minPointsCount = 2000;                
         float deltaMinimalLimit = 10;
 
         int[] lastBorders;
-        float[] lastRange;
-        int ActiveLayerIndex;
+        float[] lastRange;        
 
-        const float divisor = 1.7f;
+        const float divisor = 2f;
 
         public Plot(List<PointF> points, float min, float max, Color c)
         {
             minValue = min;
             maxValue = max;
-            color = c;
+            color = c;            
 
             //layers creating
-            layers = new List<List<PointF>>();
-            layers.Add(points);
+            layers = new List<PointF[]>();
+            layers.Add(points.ToArray());
             float count = (float)points.Count / divisor;
             int step = 1;
             do
             {
                 count /= divisor;
                 step = (int)(points.Count / count);
-                layers.Add(MakeConvolution(points, step));
+                layers.Add(MakeConvolution(points, step).ToArray());
             } while (count > minPointsCount);
 
             //let's choose the smallest layer
             ActiveLayerIndex = layers.Count - 1;
-            lastBorders = new int[] { 0, layers[ActiveLayerIndex].Count - 1 };
+            lastBorders = new int[] { 0, layers[ActiveLayerIndex].Length - 1 };
             lastRange = new float[] { points[0].X, points[points.Count - 1].X };
+
+            xRange = lastRange[1] = lastRange[0];
+            if (xRange == 0) xRange = 1;
+            yRange = max - min;
+            if (yRange == 0) yRange = 1;
+
+            //average line
+            List<PointF> list = new List<PointF>();
+            step = points.Count / 3400;
+            float buffer = 0;
+            int a = 0;
+            foreach (PointF p in points)
+            {
+                buffer += p.Y;
+                if (a >= step)
+                {
+                    list.Add(new PointF(p.X, buffer / a));
+                    buffer = 0;
+                    a = 0;
+                }
+                a++;
+            }
+            list = list.GetRange(0, (list.Count-1 > 3301) ? 3301 : list.Count);
+            if ((list.Count - 1) % 3 != 0)
+                do
+                {
+                    list.Remove(list.Last());
+                } while ((list.Count - 1) % 3 != 0);
+            averagePoints = list.ToArray();
+        }        
+
+        public void DisableAverageLine()
+        {
+            averagePointOn = false;
+        }
+        public void EnableAverageLine()
+        {
+            averagePointOn = true;
         }
 
         public void UpdateViewRange(float left, float right)
@@ -53,9 +96,9 @@ namespace Plotter3
             pointsToDraw = GetPointsInRange(left, right, (int)RangeDelta).ToArray();            
         }
 
-        private List<PointF> GetPointsInRange(float lx, float rx, int scaleDir)
+        private PointF[] GetPointsInRange(float lx, float rx, int scaleDir)
         {
-            List<PointF> outPoints = new List<PointF>();
+            PointF[] outPoints;
 
             int currLayerIndex = ActiveLayerIndex;            
             int[] borders = lastBorders;
@@ -69,7 +112,7 @@ namespace Plotter3
             if ((deltaPointsCount < minPointsCount + deltaMinimalLimit) && (deltaPointsCount > minPointsCount - deltaMinimalLimit))
             {
                 borders = newBorders;
-                outPoints = layers[currLayerIndex].GetRange(borders[0], borders[1] - borders[0]);
+                outPoints = layers[currLayerIndex].Skip(borders[0]).Take(borders[1] - borders[0]).ToArray();
 
                 lastBorders = borders;
                 lastRange = new float[] { lx, rx };
@@ -108,7 +151,8 @@ namespace Plotter3
                     } while (currLayerIndex < layers.Count - 1 && pointsCount > minPointsCount);
             }
             
-            outPoints = layers[currLayerIndex].GetRange(borders[0], borders[1] - borders[0]);
+            //danger!
+            outPoints = layers[currLayerIndex].Skip(borders[0]).Take(borders[1] - borders[0]).ToArray();
 
             ActiveLayerIndex = currLayerIndex;
             lastBorders = borders;
@@ -117,7 +161,7 @@ namespace Plotter3
             return outPoints;
         }        
 
-        private int[] NearBorders(List<PointF> layer, float lx, float rx, int lastLeftIndex, int lastRightIndex)
+        private int[] NearBorders(PointF[] layer, float lx, float rx, int lastLeftIndex, int lastRightIndex)
         {
             int leftI = FindIndex(layer, lx, lastLeftIndex);
             int rightI = FindIndex(layer, rx, lastRightIndex);
@@ -125,9 +169,9 @@ namespace Plotter3
             return new int[] { leftI, rightI };
         }
 
-        private int[] NextBorders(List<PointF> layer, List<PointF> lastLayer, float lx, float rx, int lastLeftIndex, int lastRightIndex)
+        private int[] NextBorders(PointF[] layer, PointF[] lastLayer, float lx, float rx, int lastLeftIndex, int lastRightIndex)
         {            
-            float coeff = layer.Count / lastLayer.Count;
+            float coeff = layer.Length / lastLayer.Length;
 
             int apprLeftIndex = (int)(lastLeftIndex * coeff);
             int apprRightIndex = (int)(lastRightIndex * coeff);                        
@@ -138,9 +182,9 @@ namespace Plotter3
             return new int[] { leftI, rightI };
         }
 
-        private int FindIndex(List<PointF> layer, float target, int startIndex)
+        private int FindIndex(PointF[] layer, float target, int startIndex)
         {
-            if (startIndex > layer.Count - 1) startIndex = layer.Count - 1;
+            if (startIndex > layer.Length - 1) startIndex = layer.Length - 1;
 
             int index = startIndex;
             float value = layer[startIndex].X;
@@ -152,7 +196,7 @@ namespace Plotter3
                     index--;
                 }            
             else
-                for (int i = startIndex; i < layer.Count; i++)
+                for (int i = startIndex; i < layer.Length; i++)
                 {
                     if (layer[i].X >= target) break;
                     index++;

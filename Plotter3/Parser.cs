@@ -14,17 +14,12 @@ namespace Plotter3
             byte[] buf = File.ReadAllBytes(path);
 
             int time_code = 0;
-            List<Int64> events = new List<long>();
+            List<long> events = new List<long>();
 
             for (int i = 0; i < buf.Length; i += 4)
-            {
-                switch (buf[i + 3])
-                {
-                    case 0xf4: time_code++; break;
-                    case 0xf2:
-                        events.Add(Parser.bytesToLongTime(buf[i], buf[i + 1], buf[i + 2], time_code));
-                        break;
-                }
+            {                
+                if (buf[i + 3] == signal) events.Add(bytesToLongTime(buf[i], buf[i + 1], buf[i + 2], time_code));
+                else if (buf[i + 3] == 0xf4) time_code++;
             }
             return events.ToArray();
         }
