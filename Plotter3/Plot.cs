@@ -18,15 +18,16 @@ namespace Plotter3
         public bool averagePointOn = true;
         public int ActiveLayerIndex;
         public List<PointF[]> layers;
-        public float minValue, maxValue;
+        public float minValue, maxValue;        
 
-        int minPointsCount = 2000;                
-        float deltaMinimalLimit = 10;
+        int minPointsCount = 2500;
+        int maxPointsCount = 4000;        
 
         int[] lastBorders;
         float[] lastRange;        
 
         const float divisor = 2f;
+        const int buffer = 10; // 10 points
 
         public Plot(List<PointF> points, float min, float max, Color c)
         {
@@ -101,15 +102,17 @@ namespace Plotter3
             PointF[] outPoints;
 
             int currLayerIndex = ActiveLayerIndex;            
-            int[] borders = lastBorders;
+            int[] borders = lastBorders;            
             int[] newBorders = NearBorders(layers[currLayerIndex], lx, rx, lastBorders[0], lastBorders[1]);
+            int[] nextBorders = newBorders;
+            int[] tempBorders = newBorders;
             int pointsCount = lastBorders[1] - lastBorders[0];
             int newPointsCount = newBorders[1] - newBorders[0];
 
             int deltaPointsCount = newPointsCount;// newPointsCount - pointsCount;
 
 
-            if ((deltaPointsCount < minPointsCount + deltaMinimalLimit) && (deltaPointsCount > minPointsCount - deltaMinimalLimit))
+            /*if ((deltaPointsCount < minPointsCount + deltaMinimalLimit) && (deltaPointsCount > minPointsCount - deltaMinimalLimit))
             {
                 borders = newBorders;
                 outPoints = layers[currLayerIndex].Skip(borders[0]).Take(borders[1] - borders[0]).ToArray();
@@ -118,26 +121,33 @@ namespace Plotter3
                 lastRange = new float[] { lx, rx };
 
                 return outPoints;
-            }            
+            }  */          
 
             if (deltaPointsCount < minPointsCount)
-            {                
-                if (currLayerIndex-1 <= 0) // || pointsCount <= minPointsCount)
+            {
+                if (currLayerIndex - 1 < 0 || newPointsCount >= minPointsCount)
                 {
                     currLayerIndex = ActiveLayerIndex;
                     borders = newBorders;
                 }
                 else
+                {
+                    tempBorders = NextBorders(layers[currLayerIndex], layers[ActiveLayerIndex], lx, rx, lastBorders[0], lastBorders[1]);
                     do
-                    {
+                    {                        
+                        nextBorders = tempBorders;
+                        newBorders = nextBorders;                        
                         currLayerIndex--;
-                        borders = NextBorders(layers[currLayerIndex], layers[ActiveLayerIndex], lx, rx, lastBorders[0], lastBorders[1]);
-                        pointsCount = borders[1] - borders[0];                        
-                    } while (currLayerIndex > 0 && pointsCount < minPointsCount);
+                        if (currLayerIndex >= 0) tempBorders = NextBorders(layers[currLayerIndex], layers[ActiveLayerIndex], lx, rx, lastBorders[0], lastBorders[1]);
+                        else break;
+                        newPointsCount = tempBorders[1] - tempBorders[0];
+                    } while (newPointsCount < minPointsCount);
+                    currLayerIndex++;
+                }
             }
-            else
+            else if (deltaPointsCount > maxPointsCount)
             {                
-                if (currLayerIndex+1 >= layers.Count - 1 || pointsCount <= minPointsCount)
+                if (currLayerIndex+1 >= layers.Count || newPointsCount <= maxPointsCount)
                 {
                     currLayerIndex = ActiveLayerIndex;
                     borders = newBorders;
@@ -146,12 +156,14 @@ namespace Plotter3
                     do
                     {
                         currLayerIndex++;
-                        borders = NextBorders(layers[currLayerIndex], layers[ActiveLayerIndex], lx, rx, lastBorders[0], lastBorders[1]);
-                        pointsCount = borders[1] - borders[0];                        
-                    } while (currLayerIndex < layers.Count - 1 && pointsCount > minPointsCount);
+                        newBorders = NextBorders(layers[currLayerIndex], layers[ActiveLayerIndex], lx, rx, lastBorders[0], lastBorders[1]);
+                        newPointsCount = newBorders[1] - newBorders[0];                        
+                    } while (currLayerIndex < layers.Count - 1 && newPointsCount > maxPointsCount);
             }
-            
+            borders = newBorders;            
+
             //danger!
+            //int leftBuff = 
             outPoints = layers[currLayerIndex].Skip(borders[0]).Take(borders[1] - borders[0]).ToArray();
 
             ActiveLayerIndex = currLayerIndex;

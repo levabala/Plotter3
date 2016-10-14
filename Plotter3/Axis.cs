@@ -38,11 +38,13 @@ namespace Plotter3
             double pow_x = Math.Pow(power, Math.Floor(lg_x) + 1);
             double pow_y = Math.Pow(power, Math.Floor(lg_y) + 1);
 
-            float step_x = (float)Math.Round(pow_x,3);     
-            if (step_x < 0.125) step_x = 0.125f;
+            float step_x = (float)Math.Round(pow_x);
+            float coeff = 1;
+            //if (step_x - 10 < 0) 
+            if (step_x < 1) step_x = 1;
 
-            float step_y = (float)Math.Round(pow_y, 3);
-            if (step_y < 0.125) step_y = 0.125f;
+            float step_y = (float)Math.Round(pow_y);
+            if (step_y < 1) step_y = 1;
 
             int kx = 0;
             PointF origin = DataPoint(new PointF(0, height), m);
@@ -61,7 +63,7 @@ namespace Plotter3
             g.DrawString("msec", smallFont, Brushes.Blue, width - 60, 15);
 
             int ky = 0;
-            float y = 0; // (int)origin.Y;
+            float y = 0;
             PointF yp = ScreenPoint(new PointF(0, y), m);
             do
             {
@@ -73,6 +75,19 @@ namespace Plotter3
                 y += step_y;
                 ky += 1;
             } while (yp.Y > 0 && ky < 64);
+            ky = 0;
+            y = 0;
+            yp = ScreenPoint(new PointF(0, y), m);
+            do
+            {
+                yp = ScreenPoint(new PointF(0, y), m);
+                //g.DrawLine(Pens.Red, yp.X, yp.Y, yp.X-20, yp.Y);
+                g.DrawLine(Pens.Red, 0, yp.Y, 10, yp.Y);
+                g.DrawLine(yGridPen, 10, yp.Y, width, yp.Y);
+                g.DrawString(Math.Round(y, 5).ToString(), smallFont, Brushes.Red, 0, yp.Y);
+                y -= step_y;
+                ky += 1;
+            } while (ky < 64);
             g.DrawString("rpm", smallFont, Brushes.Red, 25, height - 30);
         }
 
@@ -89,7 +104,7 @@ namespace Plotter3
         {
             PointF[] po = new PointF[] { new PointF(scr.X, scr.Y) };
             m.TransformPoints(po);
-            return po[0];
+            return po[0];            
         }        
     }
 
@@ -97,4 +112,6 @@ namespace Plotter3
     {
         horizontal, vertical
     }
+
+    //public void 
 }

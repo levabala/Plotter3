@@ -27,6 +27,7 @@ namespace Plotter3
         private Control c;
         private Matrix m = new Matrix();
         private Timer wheelEndTimer = new Timer();
+        private List<string> information = new List<string>();
 
         string PLOTTER_TRANSFORM_REGKEY;
 
@@ -50,20 +51,26 @@ namespace Plotter3
 
         private void UpdatePlots()
         {
-            UpdateViewRange(leftX, rightX);            
+            UpdateViewRange(leftX, rightX);
 
-            /*information.Clear();
-            int pIndex = 0;
-            foreach (Plot p in plotsM.plots)
-            {
-                pIndex++;
-                information.Add(String.Format("plot{0}:\n\tlayers: {1}\n\txRange: {2},\n\tyRange: {3},\n\tActiveLayer: {4}", pIndex, p.layers.Count, p.xRange, p.yRange, p.ActiveLayerIndex));
-            }*/
+            ReFillInformationBox();
 
             c.Invalidate();
         }
-        
 
+        private void ReFillInformationBox()
+        {
+            information.Clear();
+            int pIndex = 0;
+            foreach (Plot p in plots)
+            {
+                pIndex++;
+                information.Add(String.Format("plot{0}:\n\tlayers: {1}\n\txRange: {2},\n\tyRange: {3},\n\tActiveLayer: {4}\n\tPointsDrawed: {5}", pIndex, p.layers.Count, p.xRange, p.yRange, p.ActiveLayerIndex, p.pointsToDraw.Length));
+            }
+
+        }
+
+        Font infoFont = new Font("Arial", 40, FontStyle.Regular, GraphicsUnit.Document);
         private void C_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -71,14 +78,14 @@ namespace Plotter3
                 a.DrawAxises(m, g, c.ClientRectangle.Width, c.ClientRectangle.Height);
 
             //draw information strings 
-            /*float x = 10;
+            float x = 10;
             float y = 10;
             foreach (string inf in information)
             {
-                SizeF stringSize = g.MeasureString(inf, Font);
-                g.DrawString(inf, Font, Brushes.Black, x, y);
+                SizeF stringSize = g.MeasureString(inf, infoFont);
+                g.DrawString(inf, infoFont, Brushes.Black, x, y);
                 y += stringSize.Height + 3;
-            }*/
+            }
 
             //drawing plots
             DrawPlots(g, m);
@@ -288,6 +295,7 @@ namespace Plotter3
             Parallel.Invoke(actions.ToArray());
             ResetLeftAndRightX();
             UpdateViewRange(leftX, rightX);
+            ReFillInformationBox();
             c.Invalidate();
         }
 
