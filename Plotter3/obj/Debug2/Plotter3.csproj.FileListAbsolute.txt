@@ -1,0 +1,7 @@
+C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter3\bin\Debug2\Plotter3.exe.config
+C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter3\bin\Debug2\Plotter3.exe
+C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter3\obj\Debug2\Plotter3.csprojResolveAssemblyReference.cache
+C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter3\obj\Debug2\Plotter3.Form1.resources
+C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter3\obj\Debug2\Plotter3.Properties.Resources.resources
+C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter3\obj\Debug2\Plotter3.csproj.GenerateResource.Cache
+C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter3\obj\Debug2\Plotter3.exe
