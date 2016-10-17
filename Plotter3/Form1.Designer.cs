@@ -32,8 +32,8 @@
             this.SerializeAllButton = new System.Windows.Forms.Button();
             this.RestartMButton = new System.Windows.Forms.Button();
             this.PlotsTable = new System.Windows.Forms.TableLayoutPanel();
-            this.PlotBox1 = new PlotBox();
             this.PlotBox2 = new PlotBox();
+            this.PlotBox1 = new PlotBox();
             this.ControlsBox.SuspendLayout();
             this.PlotsTable.SuspendLayout();
             this.SuspendLayout();
@@ -86,10 +86,23 @@
             this.PlotsTable.Location = new System.Drawing.Point(12, 12);
             this.PlotsTable.Name = "PlotsTable";
             this.PlotsTable.RowCount = 2;
-            this.PlotsTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.PlotsTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.PlotsTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 76.52934F));
+            this.PlotsTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 23.47066F));
             this.PlotsTable.Size = new System.Drawing.Size(760, 801);
             this.PlotsTable.TabIndex = 2;
+            // 
+            // PlotBox2
+            // 
+            this.PlotBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PlotBox2.BackColor = System.Drawing.Color.White;
+            this.PlotBox2.Location = new System.Drawing.Point(3, 615);
+            this.PlotBox2.Name = "PlotBox2";
+            this.PlotBox2.NOVAPROPA = null;
+            this.PlotBox2.Size = new System.Drawing.Size(754, 183);
+            this.PlotBox2.TabIndex = 2;
+            this.PlotBox2.TabStop = true;
             // 
             // PlotBox1
             // 
@@ -99,21 +112,10 @@
             this.PlotBox1.BackColor = System.Drawing.Color.White;
             this.PlotBox1.Location = new System.Drawing.Point(3, 3);
             this.PlotBox1.Name = "PlotBox1";
-            this.PlotBox1.Size = new System.Drawing.Size(754, 394);
+            this.PlotBox1.NOVAPROPA = "sfgdfg";
+            this.PlotBox1.Size = new System.Drawing.Size(754, 606);
             this.PlotBox1.TabIndex = 1;
             this.PlotBox1.TabStop = true;
-            // 
-            // PlotBox2
-            // 
-            this.PlotBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.PlotBox2.BackColor = System.Drawing.Color.White;
-            this.PlotBox2.Location = new System.Drawing.Point(3, 403);
-            this.PlotBox2.Name = "PlotBox2";
-            this.PlotBox2.Size = new System.Drawing.Size(754, 395);
-            this.PlotBox2.TabIndex = 2;
-            this.PlotBox2.TabStop = true;
             // 
             // Form1
             // 

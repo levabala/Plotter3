@@ -37,14 +37,29 @@ namespace Plotter3
 
             double pow_x = Math.Pow(power, Math.Floor(lg_x) + 1);
             double pow_y = Math.Pow(power, Math.Floor(lg_y) + 1);
-
-            float step_x = (float)Math.Round(pow_x);
-            float coeff = 1;
+            
+            float coeffx = 0;
+            float step_x = (float)pow_x;
             //if (step_x - 10 < 0) 
-            if (step_x < 1) step_x = 1;
+            /*if (step_x < 1)
+            {
+                //step_x = 1;
+                string sx = step_x.ToString();
+                int i = 0;
+                foreach (char s in sx)
+                {
+                    if (s != '0' && s != '.') break;
+                    i++;
+                }
+                coeffx = (float)Math.Pow(10, i);
+                //step_x *= coeffx;                                     
+            }*/
 
-            float step_y = (float)Math.Round(pow_y);
-            if (step_y < 1) step_y = 1;
+            float step_y = (float)pow_y;
+
+            if (step_x > 1) step_x = (float)Math.Round(pow_x);
+
+            if (step_y > 1) step_y = (float)Math.Round(pow_y);            
 
             int kx = 0;
             PointF origin = DataPoint(new PointF(0, height), m);
@@ -56,14 +71,14 @@ namespace Plotter3
                 //g.DrawLine(Pens.Blue, xp.X, xp.Y, xp.X, xp.Y + 20);
                 g.DrawLine(Pens.Blue, xp.X, 0, xp.X, 10);
                 g.DrawLine(xGridPen, xp.X, 10, xp.X, height);
-                g.DrawString(Math.Round(x, 5).ToString(), smallFont, Brushes.Blue, xp.X + 3, -2);
+                g.DrawString(Math.Round(x, 3).ToString(), smallFont, Brushes.Blue, xp.X + 3, -2);
                 x += step_x;
                 kx += 1;
             } while (xp.X < width && kx < 64);
             g.DrawString("msec", smallFont, Brushes.Blue, width - 60, 15);
 
             int ky = 0;
-            float y = 0;
+            float y = ((int)(origin.Y / step_y) + 1) * step_y; ;
             PointF yp = ScreenPoint(new PointF(0, y), m);
             do
             {
@@ -71,7 +86,7 @@ namespace Plotter3
                 //g.DrawLine(Pens.Red, yp.X, yp.Y, yp.X-20, yp.Y);
                 g.DrawLine(Pens.Red, 0, yp.Y, 10, yp.Y);
                 g.DrawLine(yGridPen, 10, yp.Y, width, yp.Y);
-                g.DrawString(Math.Round(y, 5).ToString(), smallFont, Brushes.Red, 0, yp.Y);
+                g.DrawString(Math.Round(y, 3).ToString(), smallFont, Brushes.Red, 0, yp.Y);
                 y += step_y;
                 ky += 1;
             } while (yp.Y > 0 && ky < 64);

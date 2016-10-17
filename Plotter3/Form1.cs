@@ -16,44 +16,61 @@ namespace Plotter3
 {
     public partial class Form1 : Form
     {
-        PlotsManager plotsM,plotsM2;        
-        List<PlotParams> plotsParams1 = new List<PlotParams>()
-        {            
-            new PlotParams(@"D:\work\test_6000_fast.raw", Color.DarkBlue, 242, true)
-        };
-        List<PlotParams> plotsParams2 = new List<PlotParams>()
-        {
-            new PlotParams(@"D:\work\test_6000_fast.raw", Color.DarkGreen, 245, false)            
-        };
+        //LEVA'S VERSION
+        PlotsView pv1, pv2;
+
+        string[] args;
 
         public Form1()
-        {            
+        {
             InitializeComponent();
-            plotsM = new PlotsManager(PlotBox1);
-            plotsM2 = new PlotsManager(PlotBox2);
-            plotsM.HandleControlKeyDown(RestartMButton);
-            plotsM.HandleControlKeyDown(SerializeAllButton);
-            plotsM2.HandleControlKeyDown(RestartMButton);
-            plotsM2.HandleControlKeyDown(SerializeAllButton);
-        }  
-                
+            pv1 = new PlotsView(PlotBox1);
+            pv1.HandleControlKeyDown(RestartMButton);
+            pv1.HandleControlKeyDown(SerializeAllButton);
+            pv2 = new PlotsView(PlotBox2);
+            pv2.HandleControlKeyDown(RestartMButton);
+            pv2.HandleControlKeyDown(SerializeAllButton);
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
-            plotsM.CreatePlotsFromFiles(plotsParams1);
-            plotsM2.CreatePlotsFromFiles(plotsParams2);
-            plotsM.MatrixSavingOn(this);
-            plotsM2.MatrixSavingOn(this);
+            args = Environment.GetCommandLineArgs();
+
+            if (args.Length < 2)
+            {
+                MessageBox.Show("input params are absent");
+                Close();
+                return;
+            }
+           
+            List<PlotParams> p1 = new List<PlotParams>()
+            {
+                new PlotParams(Color.Orange, byte.Parse(args[3]), false),
+                new PlotParams(Color.Red, byte.Parse(args[2]), false)
+            };
+
+            Dictionary<byte, Plot> plots = Plot.CreatePlotsFromFile(p1,args[1]);
+
+            pv1.AddPlots(new List<Plot>() { plots[byte.Parse(args[2])] });//plots.Select(kvp => kvp.Value).ToList());
+            pv2.AddPlots(new List<Plot>() { plots[byte.Parse(args[3])] });
+            pv1.MatrixSavingOn(this);
+            pv2.MatrixSavingOn(this);            
+        }
+
+        void ProgressAction(long p)
+        {
+            Text = p.ToString();
+            Application.DoEvents();
         }
         private void RestartM_Click(object sender, EventArgs e)
         {
-            plotsM.ResetMatrix();
-            plotsM2.ResetMatrix();
+            pv1.ResetMatrix();
+            pv2.ResetMatrix();            
         }
 
         private void SerializeAll_Click(object sender, EventArgs e)
         {
-            plotsM.SerializeAll();
-            plotsM2.SerializeAll();
+                        
         }
     }
 }

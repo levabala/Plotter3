@@ -10,8 +10,15 @@ class PlotBox : Panel
         this.TabStop = true;
         BackColor = Color.White;
         DoubleBuffered = true;
-        
+
     }
+
+    public string NOVAPROPA
+        {
+        get;
+        set;
+        }
+
     protected override void OnMouseDown(MouseEventArgs e)
     {
         this.Focus();
