@@ -1,12 +1,15 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
 
-namespace Plotter3
+namespace Plotter4
 {
-    public class Parser
+    class Parser
     {
-        public static Int64[] parseLM(string path, byte signal)
+        public static long[] parseLM(string path, byte signal)
         {
             byte[] buf = File.ReadAllBytes(path);
 
@@ -54,8 +57,8 @@ namespace Plotter3
                 if (progress != null) progress(pos);
             }
             Dictionary<byte, long[]> eventsArr = new Dictionary<byte, long[]>();
-            foreach (KeyValuePair<byte,List<long>> pair in events)           
-                eventsArr[pair.Key] = pair.Value.ToArray();            
+            foreach (KeyValuePair<byte, List<long>> pair in events)
+                eventsArr[pair.Key] = pair.Value.ToArray();
 
             br.Close();
             fs.Close();
@@ -75,6 +78,4 @@ namespace Plotter3
             return t;
         }
     }
-
-
 }

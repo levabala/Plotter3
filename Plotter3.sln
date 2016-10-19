@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plotter3", "Plotter3\Plotter3.csproj", "{AE8DEEF5-662C-4733-BB6D-6BBB7F6D3B1E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plotter4", "Plotter4\Plotter4.csproj", "{C5B67A0C-B192-4251-BF7C-B51B67044C89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,22 @@ Global
 		{AE8DEEF5-662C-4733-BB6D-6BBB7F6D3B1E}.x64 testing|Any CPU.Build.0 = x64 testing|Any CPU
 		{AE8DEEF5-662C-4733-BB6D-6BBB7F6D3B1E}.x64 testing|x64.ActiveCfg = Debug|x64
 		{AE8DEEF5-662C-4733-BB6D-6BBB7F6D3B1E}.x64 testing|x64.Build.0 = Debug|x64
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Debug|x64.Build.0 = Debug|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Debug2|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Debug2|Any CPU.Build.0 = Debug|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Debug2|x64.ActiveCfg = Debug|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Debug2|x64.Build.0 = Debug|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Release|x64.ActiveCfg = Release|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.Release|x64.Build.0 = Release|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.x64 testing|Any CPU.ActiveCfg = Release|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.x64 testing|Any CPU.Build.0 = Release|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.x64 testing|x64.ActiveCfg = Release|Any CPU
+		{C5B67A0C-B192-4251-BF7C-B51B67044C89}.x64 testing|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

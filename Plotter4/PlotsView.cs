@@ -1,42 +1,45 @@
 ﻿using System;
-using System.Windows.Forms;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
+using System.Windows.Controls;
+using System.Windows.Shapes;
 
-namespace Plotter3
+namespace Plotter4
 {
     class PlotsView
     {
-        private Control c;
+        private PlotBox c;
         private Matrix m = new Matrix();
-        private Timer wheelEndTimer = new Timer();
+        private DispatcherTimer wheelEndTimer = new DispatcherTimer();
         public List<Plot> plots = new List<Plot>();
-        private float leftX, rightX;
-        public float absMin, absMax;
-        public float xRange = 1;
-        public float maxLeftX, maxRightX;
+        private double leftX, rightX;
+        public double absMin, absMax;
+        public double xRange = 1;
+        public double maxLeftX, maxRightX;
         private bool setted = false;
-        public List<Axises> axises = new List<Axises>();
+        public List<Axis> axises = new List<Axis>();
         string PLOTTER_TRANSFORM_REGKEY = "";
 
         public PlotsView(PlotBox control)
-        {
-            if (control.GetType().GetMethod("CreateGraphics") == null)
-                throw new CannotCreateGraphicsException("The control can't create a graphics object");
-            c = control;            
+        {            
+            c = control;
 
-            PLOTTER_TRANSFORM_REGKEY = "plotter_transform_" + control.Name;            
-
-            c.Paint += C_Paint;
+            PLOTTER_TRANSFORM_REGKEY = "plotter_transform_" + control.Name;
+            
             c.MouseMove += C_MouseMove;
             c.MouseUp += C_MouseUp;
             c.MouseWheel += C_MouseWheel;
             c.KeyDown += C_KeyDown;
+            
 
-            wheelEndTimer.Interval = 30;
+            wheelEndTimer.Interval = new TimeSpan(0, 0, 01);
+            wheelEndTimer.Start();
             wheelEndTimer.Tick += WheelEndTimer_Tick;
         }
 
@@ -44,9 +47,14 @@ namespace Plotter3
         {
             this.plots.AddRange(plots);
             UpdateAbsProps();
-            restartMatrix();            
+            //restartMatrix();
+            resetMatrix();
             ResetLeftAndRightX();
-            c.Invalidate();
+            UpdatePlots();
+
+            foreach (Plot p in plots)
+                DrawPlot(p);
+            //c.Invalidate();
         }
 
         private void UpdateAbsProps()
@@ -58,16 +66,16 @@ namespace Plotter3
             {
                 if (p.minValue < absMin || !setted) absMin = p.minValue;
                 if (p.maxValue > absMax || !setted) absMax = p.maxValue;
-                            
+
                 if (p.xRange > xRange || !setted) xRange = p.xRange;
                 if (p.layers[0][0].X > maxLeftX || !setted) maxLeftX = p.layers[0][0].X;
                 if (p.layers[0][p.layers[0].Length - 1].X > maxRightX || !setted) maxRightX = p.layers[0][p.layers[0].Length - 1].X;
                 setted = true;
             }
-            if (axises.Count == 0) axises.Add(new Axises());
+            if (axises.Count == 0) axises.Add(new Axis());
         }
 
-        public void UpdateViewRange(float left, float right)
+        public void UpdateViewRange(double left, double right)
         {
             Parallel.ForEach(plots, (p) =>
             {
@@ -87,28 +95,34 @@ namespace Plotter3
                 information.Add(String.Format("plot{0}:\n\tlayers: {1}\n\txRange: {2},\n\tyRange: {3},\n\tActiveLayer: {4}", pIndex, p.layers.Count, p.xRange, p.yRange, p.ActiveLayerIndex));
             }*/
 
-            c.Invalidate();
+            //c.Invalidate();
         }
 
 
-        private void C_Paint(object sender, PaintEventArgs e)
+        private void DrawPlot(Plot p)
         {
-            Graphics g = e.Graphics;
-            foreach (Axises a in axises)
-                a.DrawAxises(m, g, c.ClientRectangle.Width, c.ClientRectangle.Height);
+            c.Clear();
+            Polyline poly = new Polyline();
+            poly.Points = new PointCollection(p.pointsToDraw);
+            poly.Stroke = Brushes.Red;            
+            c.Canvas.RenderTransform = new MatrixTransform(m);
+            c.AddChild(poly);                        
+
+
+            //foreach (Axises a in axises)
+              //  a.DrawAxises(m, g, c.ClientRectangle.ActualWidth , c.ClientRectangle.ActualHeight);
 
             //draw information strings 
-            /*float x = 10;
-            float y = 10;
+            /*double x = 10;
+            double y = 10;
             foreach (string inf in information)
             {
                 SizeF stringSize = g.MeasureString(inf, Font);
                 g.DrawString(inf, Font, Brushes.Black, x, y);
-                y += stringSize.Height + 3;
+                y += stringSize.ActualHeight + 3;
             }*/
 
-            //drawing plots
-            DrawPlots(g, m);
+            //drawing plots            
         }
 
         public void HandleControlKeyDown(Control control)
@@ -116,27 +130,27 @@ namespace Plotter3
             control.KeyDown += C_KeyDown;
         }
 
-        public void DrawPlots(Graphics g, Matrix m)
+        /*public void DrawPlots(Graphics g, Matrix m)
         {
             foreach (Plot p in plots)
             {
                 if (p.pointsToDraw.Length < 2) continue;
                 if (p.averagePointOn)
                 {
-                    PointF[] avps = p.averagePoints.ToArray();
+                    Point[] avps = p.averagePoints.ToArray();
                     m.TransformPoints(avps);
                     //avLinePen = new Pen(c, 0.5f);
                     //g.DrawBeziers(p.avLinePen, avps);
                 }
 
-                PointF[] ps = p.pointsToDraw.ToArray(); //clone it!                
+                Point[] ps = p.pointsToDraw.ToArray(); //clone it!                
                 m.TransformPoints(ps);
                 g.DrawLines(new Pen(p.color), ps);
             }
-        }
+        }*/
 
         #region MouseListeners
-        PointF lastmousepos;
+        Point lastmousepos;
         private void C_MouseUp(object sender, MouseEventArgs e)
         {
             UpdatePlots();
@@ -144,25 +158,25 @@ namespace Plotter3
 
         private void C_MouseMove(object sender, MouseEventArgs e)
         {
-            PointF dp = DataPoint(e.Location);
+            Point mousepos = e.GetPosition(c);
+            Point dp = DataPoint(mousepos);            
             //Text = String.Format("X:{0:F9} Y:{1:F9}", dp.X, dp.Y);
-            if (e.Button == MouseButtons.Right)
+            if (e.LeftButton == MouseButtonState.Pressed)
             {
-                float dx = DataPoint(lastmousepos).X - DataPoint(e.Location).X;
-                float dy = DataPoint(lastmousepos).Y - DataPoint(e.Location).Y;
-
-                //cam.Move(dx, dy);
-                ResetLeftAndRightX();
-
-                m.Translate(-dx, -dy);
-                c.Invalidate();
+                double dx = DataPoint(lastmousepos).X - dp.X;
+                double dy = DataPoint(lastmousepos).Y - dp.Y;
+                
+                ResetLeftAndRightX();                
+                m.Translate(-dx, -dy);                
+                c.Canvas.RenderTransform = new MatrixTransform(m);
+                //c.Invalidate();
             }
-            lastmousepos = e.Location;
+            lastmousepos = e.GetPosition(c);
         }
         private void ResetLeftAndRightX()
         {
-            PointF newlp = DataPoint(new PointF(0f, 0f));
-            PointF newrp = DataPoint(new PointF(c.ClientSize.Width, c.ClientSize.Height));
+            Point newlp = DataPoint(new Point(0f, 0f));
+            Point newrp = DataPoint(new Point(c.ActualWidth , c.ActualHeight));
 
             leftX = newlp.X;
             rightX = newrp.X;
@@ -172,24 +186,24 @@ namespace Plotter3
         #region KeyboardListener
         private void C_KeyDown(object sender, KeyEventArgs e)
         {
-            switch (e.KeyCode)
+            switch (e.Key)
             {
-                case Keys.Escape:
-                    Application.Exit();
+                case Key.Escape:
+                    Application.Current.Shutdown();
                     break;
-                case Keys.R:
+                case Key.R:
                     resetMatrix();
-                    c.Invalidate();
+                    //c.Invalidate();
                     break;
             }
             //checking for a number
-            int value = -1;
-            if (e.KeyValue >= ((int)Keys.NumPad0) && e.KeyValue <= ((int)Keys.NumPad9))
-                value = e.KeyValue - ((int)Keys.NumPad0);
-            else if (e.KeyValue >= ((int)Keys.D0) && e.KeyValue <= ((int)Keys.D9))
-                value = e.KeyValue - ((int)Keys.D0);
+            /*int value = -1;
+            if (e.KeyValue >= ((int)Key.NumPad0) && e.KeyValue <= ((int)Key.NumPad9))
+                value = e.KeyValue - ((int)Key.NumPad0);
+            else if (e.KeyValue >= ((int)Key.D0) && e.KeyValue <= ((int)Key.D9))
+                value = e.KeyValue - ((int)Key.D0);
             //choosing a plot
-            FocusOnPlot(value);
+            FocusOnPlot(value);*/
         }
         #endregion
 
@@ -199,9 +213,9 @@ namespace Plotter3
             MessageBox.Show("Serialized", "PlotsManager has been serialized");
         }
 
-        public static bool IsKeyADigit(Keys key)
+        public static bool IsKeyADigit(Key key)
         {
-            return (key >= Keys.D0 && key <= Keys.D9) || (key >= Keys.NumPad0 && key <= Keys.NumPad9);
+            return (key >= Key.D0 && key <= Key.D9) || (key >= Key.NumPad0 && key <= Key.NumPad9);
         }
 
         private void FocusOnPlot(int index)
@@ -214,47 +228,41 @@ namespace Plotter3
 
             m = new Matrix();
             m.Scale(1, -1);
-            m.Translate(0, -c.ClientSize.Height);
-            m.Scale(c.ClientSize.Width / plot.xRange, c.ClientSize.Height / (plot.maxValue - plot.minValue));
+            m.Translate(0, -c.ActualHeight);
+            m.Scale(c.ActualWidth  / plot.xRange, c.ActualHeight / (plot.maxValue - plot.minValue));
 
-            c.Invalidate();
+            //c.Invalidate();
         }
         #endregion
         #region MatrixSaving
-        public void MatrixSavingOn(Form form)
+        public void MatrixSavingOn()
         {
-            form.FormClosing += Form_FormClosing;
+            Application.Current.MainWindow.Closing += MainWindow_Closing;            
         }
 
-        private void Form_FormClosing(object sender, FormClosingEventArgs e)
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Microsoft.Win32.Registry.CurrentUser.SetValue(PLOTTER_TRANSFORM_REGKEY, matrixToString(m));
-        }
+        }        
         #endregion
 
         #region MatrixManipulations
-        private PointF DataPoint(PointF scr)
+        private Point DataPoint(Point scr)
         {
-            Matrix mr = m.Clone();
-            mr.Invert();
-            PointF[] po = new PointF[] { new PointF(scr.X, scr.Y) };
-            mr.TransformPoints(po);
-            return po[0];
+            Matrix mr = m;
+            mr.Invert();            
+            return mr.Transform(new Point(scr.X, scr.Y));
         }
 
-        private PointF ScreenPoint(PointF scr)
-        {
-            PointF[] po = new PointF[] { new PointF(scr.X, scr.Y) };
-            m.TransformPoints(po);
-            return po[0];
+        private Point ScreenPoint(Point scr)
+        {            
+            return m.Transform(new Point(scr.X, scr.Y));
         }
 
 
-        private PointF GetMatrixScale()
-        {
-            PointF[] ps = new PointF[] { new PointF(1f, 1f) };
-            m.TransformPoints(ps);
-            return ps[0];
+        private Point GetMatrixScale()
+        {            
+            return m.Transform(new Point(1f, 1f));
         }
         private void restartMatrix()
         {
@@ -262,7 +270,7 @@ namespace Plotter3
             {
                 string ms = (string)Microsoft.Win32.Registry.CurrentUser.GetValue(PLOTTER_TRANSFORM_REGKEY);
                 string[] mv = ms.Split(' ');
-                float[] mf = mv.Select(a => float.Parse(a)).ToArray();
+                double[] mf = mv.Select(a => double.Parse(a)).ToArray();
                 m = new Matrix(mf[0], mf[1], mf[2], mf[3], mf[4], mf[5]);
             }
             catch (Exception e)
@@ -277,40 +285,40 @@ namespace Plotter3
         private void resetMatrix()
         {
             m = new Matrix();
-            m.Scale(1, -1);
-            m.Translate(0, -c.ClientSize.Height);
-            float scalex = c.ClientSize.Width / xRange;
-            float scaley = c.ClientSize.Height / (absMax - absMin);
-            if (absMax - absMin == 0) scaley = 1;
-            m.Scale(scalex, scaley);
+            //m.Translate(0, c.ActualHeight/2);
+            //m.Translate(0, c.ActualHeight);
+            //m.Scale(1, -1);            
+            double scalex = c.ActualWidth  / xRange;
+            double scaley = c.ActualHeight / (absMax - absMin);
+            if (absMax - absMin == 0) scaley = 1;            
+            m.Scale(scalex, scaley);            
         }
 
         private string matrixToString(Matrix m)
         {
-            return m.Elements.Select(a => a.ToString()).Aggregate((a, b) => a + " " + b);
+            return string.Format("{0} {1} {2} {3} {4} {5}", m.M11, m.M12, m.M21, m.M22, m.OffsetX, m.OffsetY);           
         }
         #endregion
 
         #region MouseScaling
-        private void C_MouseWheel(object sender, MouseEventArgs e)
+        private void C_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            PointF pos = DataPoint(e.Location);
-            bool inXscale = e.Location.Y < 50;
-            bool inYscale = e.Location.X < 50;
-            float z = e.Delta > 0 ? 1.1f : 1.0f / 1.1f;
-            float kx = z;
-            float ky = z;
+            Point mousepos = e.GetPosition(c);
+            Point pos = DataPoint(mousepos);
+            bool inXscale = mousepos.Y < 50;
+            bool inYscale = mousepos.X < 50;
+            double z = e.Delta > 0 ? 1.1f : 1.0f / 1.1f;
+            double kx = z;
+            double ky = z;
 
-            if (/*ModifierKeys.HasFlag(Keys.Control) || */inXscale) ky = 1;
-            if (/*ModifierKeys.HasFlag(Keys.Shift) || */inYscale) kx = 1;
-            PointF po = DataPoint(e.Location);
+            if (/*ModifierKey.HasFlag(Key.Control) || */inXscale) ky = 1;
+            if (/*ModifierKey.HasFlag(Key.Shift) || */inYscale) kx = 1;
+            Point po = DataPoint(mousepos);
             m.Translate(po.X, po.Y);
             m.Scale(kx, ky);
-            m.Translate(-po.X, -po.Y);
+            m.Translate(-po.X, -po.Y);            
 
-            //Text += " |" + scalingDirection.ToString() + "| ";
-
-            c.Invalidate();
+            //c.Invalidate();
 
             wheelEndTimer.Stop();
             wheelEndTimer.Start();
@@ -320,14 +328,14 @@ namespace Plotter3
         {
             wheelEndTimer.Stop();
 
-            PointF newlp = DataPoint(new PointF(0f, 0f));
-            PointF newrp = DataPoint(new PointF(c.ClientSize.Width, c.ClientSize.Height));
+            Point newlp = DataPoint(new Point(0f, 0f));
+            Point newrp = DataPoint(new Point(c.ActualWidth , c.ActualHeight));
 
             leftX = newlp.X;
             rightX = newrp.X;
 
             UpdatePlots();
-            c.Invalidate();
+            //c.Invalidate();
         }
 
 
@@ -343,20 +351,8 @@ namespace Plotter3
             resetMatrix();
             ResetLeftAndRightX();
             UpdatePlots();
-            c.Invalidate();
+            //c.Invalidate();
         }
-
-        /*public void SerializeAll_Click(object sender, EventArgs e)
-        {
-            SerializeAll();
-        }
-
-        public void SerializeAll()
-        {
-            Serialize();
-            Serialized += PlotsM_Serialized;
-        }*/
-
         #endregion
     }
 
@@ -391,5 +387,4 @@ namespace Plotter3
             this.averageLineOn = averageLineOn;
         }
     }
-
 }
