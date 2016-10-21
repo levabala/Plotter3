@@ -17,6 +17,7 @@ namespace Plotter4
         private PlotBox c;
         private Matrix m = new Matrix();
         private DispatcherTimer wheelEndTimer = new DispatcherTimer();
+        private DispatcherTimer dragTimer = new DispatcherTimer();
         public List<Plot> plots = new List<Plot>();
         private double leftX, rightX;
         public double absMin, absMax;
@@ -33,6 +34,7 @@ namespace Plotter4
             PLOTTER_TRANSFORM_REGKEY = "plotter_transform_" + control.Name;
             
             c.MouseMove += C_MouseMove;
+            c.MouseDown += C_MouseDown;
             c.MouseUp += C_MouseUp;
             c.MouseWheel += C_MouseWheel;
             c.KeyDown += C_KeyDown;
@@ -41,6 +43,16 @@ namespace Plotter4
             wheelEndTimer.Interval = new TimeSpan(0, 0, 01);
             wheelEndTimer.Start();
             wheelEndTimer.Tick += WheelEndTimer_Tick;
+
+            dragTimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
+            //dragTimer.Start();
+            dragTimer.Tick += DragTimer_Tick;
+        }
+
+        Point mousedownpos;
+        private void C_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            mousedownpos = DataPoint(e.GetPosition(c));
         }
 
         public void AddPlots(List<Plot> plots)
@@ -151,6 +163,17 @@ namespace Plotter4
 
         #region MouseListeners
         Point lastmousepos;
+        Point targetMousePos;
+        private void DragTimer_Tick(object sender, EventArgs e)
+        {
+            double dx = targetMousePos.X - mousedownpos.X;
+            double dy = targetMousePos.Y - mousedownpos.Y;
+
+            ResetLeftAndRightX();
+            m.Translate(dx, dy);
+            c.Canvas.RenderTransform = new MatrixTransform(m);
+        }
+
         private void C_MouseUp(object sender, MouseEventArgs e)
         {
             UpdatePlots();
@@ -159,17 +182,18 @@ namespace Plotter4
         private void C_MouseMove(object sender, MouseEventArgs e)
         {
             Point mousepos = e.GetPosition(c);
-            Point dp = DataPoint(mousepos);            
-            //Text = String.Format("X:{0:F9} Y:{1:F9}", dp.X, dp.Y);
+            Point dp = DataPoint(mousepos);
+            ((MainWindow)Application.Current.MainWindow).Title = string.Format("X:{0:F9} Y:{1:F9}", dp.X, dp.Y);
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                double dx = DataPoint(lastmousepos).X - dp.X;
-                double dy = DataPoint(lastmousepos).Y - dp.Y;
-                
+                double dx = dp.X - mousedownpos.X;
+                double dy = dp.Y - mousedownpos.Y;                                
+
                 ResetLeftAndRightX();                
-                m.Translate(-dx, -dy);                
+                m.Translate(dx, dy);                
                 c.Canvas.RenderTransform = new MatrixTransform(m);
                 //c.Invalidate();
+                targetMousePos = dp;
             }
             lastmousepos = e.GetPosition(c);
         }
@@ -316,7 +340,8 @@ namespace Plotter4
             Point po = DataPoint(mousepos);
             m.Translate(po.X, po.Y);
             m.Scale(kx, ky);
-            m.Translate(-po.X, -po.Y);            
+            m.Translate(-po.X, -po.Y);
+            c.Canvas.RenderTransform = new MatrixTransform(m);
 
             //c.Invalidate();
 

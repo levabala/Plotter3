@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Plotter4"
         mc:Ignorable="d"
         x:Name="window"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="350" Width="525" WindowState="Maximized">
     <Grid>
         <local:PlotBox x:Name="PlotBox1" Margin="10,10,10,10"/>
 

@@ -34,11 +34,12 @@ namespace Plotter3
             c.MouseMove += C_MouseMove;
             c.MouseUp += C_MouseUp;
             c.MouseWheel += C_MouseWheel;
+            c.MouseDown += C_MouseDown;
             c.KeyDown += C_KeyDown;
 
             wheelEndTimer.Interval = 30;
             wheelEndTimer.Tick += WheelEndTimer_Tick;
-        }
+        }        
 
         public void AddPlots(List<Plot> plots)
         {
@@ -93,7 +94,7 @@ namespace Plotter3
 
         private void C_Paint(object sender, PaintEventArgs e)
         {
-            Graphics g = e.Graphics;
+            Graphics g = e.Graphics;            
             foreach (Axises a in axises)
                 a.DrawAxises(m, g, c.ClientRectangle.Width, c.ClientRectangle.Height);
 
@@ -137,9 +138,19 @@ namespace Plotter3
 
         #region MouseListeners
         PointF lastmousepos;
+        PointF mousedownpos;
+        Matrix downMatrix = new Matrix();
         private void C_MouseUp(object sender, MouseEventArgs e)
         {
             UpdatePlots();
+        }
+
+        private void C_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                mousedownpos = DataPoint(e.Location);                
+            }
         }
 
         private void C_MouseMove(object sender, MouseEventArgs e)
@@ -148,13 +159,12 @@ namespace Plotter3
             //Text = String.Format("X:{0:F9} Y:{1:F9}", dp.X, dp.Y);
             if (e.Button == MouseButtons.Right)
             {
-                float dx = DataPoint(lastmousepos).X - DataPoint(e.Location).X;
-                float dy = DataPoint(lastmousepos).Y - DataPoint(e.Location).Y;
+                float dx = dp.X - mousedownpos.X;//DataPoint(e.Location).X;
+                float dy = dp.Y - mousedownpos.Y;//DataPoint(e.Location).Y;
 
                 //cam.Move(dx, dy);
-                ResetLeftAndRightX();
-
-                m.Translate(-dx, -dy);
+                ResetLeftAndRightX();                
+                m.Translate(dx, dy);
                 c.Invalidate();
             }
             lastmousepos = e.Location;
@@ -256,14 +266,18 @@ namespace Plotter3
             m.TransformPoints(ps);
             return ps[0];
         }
+        private Matrix StringToMatrix(string ms)
+        {
+            string[] mv = ms.Split(' ');
+            float[] mf = mv.Select(a => float.Parse(a)).ToArray();
+            return new Matrix(mf[0], mf[1], mf[2], mf[3], mf[4], mf[5]);
+        }
         private void restartMatrix()
         {
             try
             {
                 string ms = (string)Microsoft.Win32.Registry.CurrentUser.GetValue(PLOTTER_TRANSFORM_REGKEY);
-                string[] mv = ms.Split(' ');
-                float[] mf = mv.Select(a => float.Parse(a)).ToArray();
-                m = new Matrix(mf[0], mf[1], mf[2], mf[3], mf[4], mf[5]);
+                m = StringToMatrix(ms);
             }
             catch (Exception e)
             {
