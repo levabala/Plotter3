@@ -8,19 +8,134 @@ using System.Drawing.Drawing2D;
 
 namespace Plotter3
 {
-    class Axises
+    abstract class AxisDrawer
+    {
+        Font smallFont = new Font("Calibri", 13, FontStyle.Bold);
+        Pen xGridPen = new Pen(Brushes.Blue, 0.5f);
+        Pen yGridPen = new Pen(Brushes.Green, 0.5f);
+
+        public static void DrawHorizontal(Matrix m, Graphics g, PointF startP, PointF endP)
+        {
+
+        }
+    }
+
+    class Axis
+    {
+        Font smallFont = new Font("Calibri", 13, FontStyle.Bold);
+        Pen xGridPen = new Pen(Brushes.Blue, 0.5f);
+        PointF startP, endP;
+
+        public delegate void DrawAxis(Matrix m, Graphics g, PointF startP, PointF endP);
+
+        DrawAxis d;
+        public Axis(Orientation orient)
+        {
+            if (orient == Orientation.horizontal)
+                d = DrawAxisHor;
+            else
+                d = DrawAxisVert;
+        }        
+
+        public void Paint(Matrix m, Graphics g, PointF startP)
+        {
+            d(m, g, startP, endP);
+        }
+
+        private void DrawAxisHor(Matrix m, Graphics g, PointF startP, PointF endP)
+        {
+            PointF axes_step_pt = new PointF(0, 0);
+            PointF axes_step_pt2 = new PointF(70, 50);
+            PointF axes_step = DataPoint(axes_step_pt, m);
+            PointF axes_step2 = DataPoint(axes_step_pt2, m);            
+
+            int power = 5;
+
+            float dx = axes_step2.X - axes_step.X;
+            double lg_x = Math.Log(Math.Abs(dx), power);
+            double pow_x = Math.Pow(power, Math.Floor(lg_x) + 1);                        
+            float step_x = (float)pow_x;
+            if (step_x > 1) step_x = (float)Math.Round(pow_x);
+
+            int kx = 0;
+            PointF origin = DataPoint(startP, m);
+            float x = ((int)(origin.X / step_x) + 1) * step_x;
+            PointF xp = ScreenPoint(new PointF(x, 0), m);
+            do
+            {
+                xp = ScreenPoint(new PointF(x, 0), m);
+                //g.DrawLine(Pens.Blue, xp.X, xp.Y, xp.X, xp.Y + 20);
+                g.DrawLine(Pens.Blue, xp.X, 0, xp.X, 10);
+                g.DrawLine(xGridPen, xp.X, 10, xp.X, startP.Y);
+                g.DrawString(Math.Round(x, 3).ToString(), smallFont, Brushes.Blue, xp.X + 3, -2);
+                x += step_x;
+                kx += 1;
+            } while (xp.X < endP.X && kx < 64);
+            g.DrawString("msec", smallFont, Brushes.Blue, endP.X - 60, 15);
+        }
+
+        private void DrawAxisVert(Matrix m, Graphics g, PointF startP, PointF endP)
+        {
+            PointF axes_step_pt = new PointF(0, 0);
+            PointF axes_step_pt2 = new PointF(70, 50);
+            PointF axes_step = DataPoint(axes_step_pt, m);
+            PointF axes_step2 = DataPoint(axes_step_pt2, m);
+
+            int power = 5;
+
+            float dx = axes_step2.X - axes_step.X;
+            double lg_x = Math.Log(Math.Abs(dx), power);
+            double pow_x = Math.Pow(power, Math.Floor(lg_x) + 1);
+            float step_x = (float)pow_x;
+            if (step_x > 1) step_x = (float)Math.Round(pow_x);
+
+            int kx = 0;
+            PointF origin = DataPoint(startP, m);
+            float x = ((int)(origin.X / step_x) + 1) * step_x;
+            PointF xp = ScreenPoint(new PointF(x, 0), m);
+            do
+            {
+                xp = ScreenPoint(new PointF(x, 0), m);
+                //g.DrawLine(Pens.Blue, xp.X, xp.Y, xp.X, xp.Y + 20);
+                g.DrawLine(Pens.Blue, xp.X, 0, xp.X, 10);
+                g.DrawLine(xGridPen, xp.X, 10, xp.X, startP.Y);
+                g.DrawString(Math.Round(x, 3).ToString(), smallFont, Brushes.Blue, xp.X + 3, -2);
+                x += step_x;
+                kx += 1;
+            } while (xp.X < endP.X && kx < 64);
+            g.DrawString("msec", smallFont, Brushes.Blue, endP.X - 60, 15);
+        }
+
+        private PointF DataPoint(PointF scr, Matrix m)
+        {
+            Matrix mr = m.Clone();
+            mr.Invert();
+            PointF[] po = new PointF[] { new PointF(scr.X, scr.Y) };
+            mr.TransformPoints(po);
+            return po[0];
+        }
+
+        private PointF ScreenPoint(PointF scr, Matrix m)
+        {
+            PointF[] po = new PointF[] { new PointF(scr.X, scr.Y) };
+            m.TransformPoints(po);
+            return po[0];
+        }
+    }    
+
+    class Axes
     {                
         Font smallFont = new Font("Calibri", 13, FontStyle.Bold);
         Pen xGridPen = new Pen(Brushes.Blue, 0.5f);
         Pen yGridPen = new Pen(Brushes.Green, 0.5f);
 
-        public Axises()
+        public Axes()
         {
             xGridPen.DashStyle = DashStyle.Dot;
             yGridPen.DashStyle = DashStyle.Dot;
         }        
 
-        public void DrawAxises(Matrix m, Graphics g, float width, float height)
+        public void Drawaxes(Matrix m, Graphics g, float width, float height)
         {
             PointF axes_step_pt = new PointF(0, 0);
             PointF axes_step_pt2 = new PointF(70, 50);

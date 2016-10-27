@@ -85,6 +85,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -103,6 +104,12 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="InternalAxis.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="InternalAxis.Designer.cs">
+      <DependentUpon>InternalAxis.cs</DependentUpon>
+    </Compile>
     <Compile Include="Parser.cs" />
     <Compile Include="PlotBox.cs">
       <SubType>Component</SubType>
@@ -111,9 +118,18 @@
     <Compile Include="PlotView.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RawsViewer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="RawsViewer.Designer.cs">
+      <DependentUpon>RawsViewer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Vector.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InternalAxis.resx">
+      <DependentUpon>InternalAxis.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -124,6 +140,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="RawsViewer.resx">
+      <DependentUpon>RawsViewer.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

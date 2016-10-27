@@ -56,6 +56,16 @@ namespace Plotter3
             //pv2.ResetMatrix();            
         }
 
+        private void splitContainer1_Panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void internalAxis2_Load(object sender, EventArgs e)
+        {
+
+        }
+
         private void SerializeAll_Click(object sender, EventArgs e)
         {
                         
