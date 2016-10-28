@@ -81,7 +81,7 @@ namespace Plotter3
         public void FitFont()
         {
             if (ParentForm == null) return;
-            float w = ClientRectangle.Width;
+            float w = ClientRectangle.Width - 15;
             float h = ClientRectangle.Height;
             float size = smallFont.Size;
 
@@ -162,11 +162,11 @@ namespace Plotter3
         {
             Graphics g = e.Graphics;
             PointF axes_step_pt = new PointF(0, 0);
-            PointF axes_step_pt2 = new PointF(70, 50);
+            PointF axes_step_pt2 = new PointF(110, 60);
             PointF axes_step = DataPoint(axes_step_pt, m);
             PointF axes_step2 = DataPoint(axes_step_pt2, m);
 
-            int power = 5;
+            int power = 2;
 
             float dx = axes_step2.X - axes_step.X;
             double lg_x = Math.Log(Math.Abs(dx), power);
@@ -176,7 +176,7 @@ namespace Plotter3
 
             int kx = 0;
             PointF origin = DataPoint(startP, m);
-            float x = ((int)(origin.X / step_x) + 1) * step_x;
+            float x = ((int)(origin.X / step_x) + 1) * step_x - step_x * 3;
             PointF xp = ScreenPoint(new PointF(x, 0), m);
             List<ValPos> labels = new List<ValPos>();
             do
@@ -201,13 +201,13 @@ namespace Plotter3
             float coeff = (float)Math.Pow(10, log);
 
             foreach (ValPos vp in labels)
-                g.DrawString(string.Format("{0, 5}", Math.Round(vp.value / coeff, 5)), smallFont, Brushes.Blue, vp.pos, ClientRectangle.Height - g.MeasureString(vp.value.ToString(), smallFont).Height);
+                g.DrawString(string.Format("{0, 4}", Math.Round(vp.value / coeff, 4)), smallFont, Brushes.Blue, vp.pos, ClientRectangle.Height - g.MeasureString(vp.value.ToString(), smallFont).Height);
 
             Font titleFont = GetAxisHorTitleFont(ClientRectangle.Height, "msec x" + coeff.ToString());
             //g.DrawString("rpm x" + coeff.ToString(), titleFont, Brushes.Red, ClientRectangle.Width - g.MeasureString("rpm x" + coeff.ToString(), titleFont).Width, endP.Y - 30);
 
 
-            g.DrawString("msec x" + coeff.ToString(), titleFont, Brushes.Blue, ClientRectangle.Width - g.MeasureString("msec x" + coeff.ToString(), titleFont).Width - 5, -10);
+            g.DrawString("msec x" + coeff.ToString(), titleFont, Brushes.Blue, ClientRectangle.Width - g.MeasureString("msec x" + coeff.ToString(), titleFont).Width - 5, -g.MeasureString("m", titleFont).Height / 5f);
         }
 
         private void PaintVerticalAxis(object sender, PaintEventArgs e)
@@ -238,7 +238,7 @@ namespace Plotter3
                 g.DrawLine(Pens.Red, 0, yp.Y, 10, yp.Y);
                 g.DrawLine(yGridPen, 10, yp.Y, startP.X, yp.Y);
                 //g.DrawString(string.Format("{0, 5}", Math.Round(y, 3)), smallFont, Brushes.Red, 0, yp.Y);
-                labels.Add(new ValPos((float)Math.Round(y, 5), yp.Y));
+                labels.Add(new ValPos((float)Math.Round(y, 4), yp.Y));
                 y += step_y;
                 ky += 1;
             } while (yp.Y > 0 && ky < 64);
@@ -252,7 +252,7 @@ namespace Plotter3
                 g.DrawLine(Pens.Red, 0, yp.Y, 10, yp.Y);
                 g.DrawLine(yGridPen, 10, yp.Y, startP.X, yp.Y);
                 //g.DrawString(string.Format("{0, 5}", Math.Round(y, 5)), smallFont, Brushes.Red, 0, yp.Y);
-                labels.Add(new ValPos((float)Math.Round(y, 5), yp.Y));
+                labels.Add(new ValPos((float)Math.Round(y, 4), yp.Y));
                 y -= step_y;
                 ky += 1;
             } while (ky < 64);            
@@ -267,7 +267,7 @@ namespace Plotter3
             float coeff = (float)Math.Pow(10, log);
 
             foreach (ValPos vp in labels)
-                g.DrawString(string.Format("{0, 5}", Math.Round(vp.value / coeff, 5)), smallFont, Brushes.Red, 0, vp.pos);
+                g.DrawString(string.Format("{0, 4}", Math.Round(vp.value / coeff, 4)), smallFont, Brushes.Red, 0, vp.pos);
 
             Font titleFont = GetAxisVertTitleFont(ClientRectangle.Width, "rpm x" + coeff.ToString());
             g.DrawString("rpm x"+coeff.ToString(), titleFont, Brushes.Red, ClientRectangle.Width - g.MeasureString("rpm x"+coeff.ToString(), titleFont).Width, endP.Y - 30);
@@ -276,6 +276,7 @@ namespace Plotter3
         public Font GetAxisHorTitleFont(float height, string title)
         {
             float size = 4;
+            height -= 10;
             Font font = new Font("Calibri", size, FontStyle.Bold);
             if (title.Length < 1) return font;
             Graphics g = CreateGraphics();
