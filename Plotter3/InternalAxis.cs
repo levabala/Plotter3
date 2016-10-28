@@ -14,7 +14,7 @@ namespace Plotter3
     public partial class InternalAxis : UserControl
     {
         public OrientationType orientation;
-        Font smallFont = new Font("Calibri", 13, FontStyle.Bold);
+        Font smallFont = new Font("Calibri", 13, FontStyle.Bold);        
         Pen xGridPen = new Pen(Brushes.Blue, 0.5f);
         Pen yGridPen = new Pen(Brushes.Green, 0.5f);
         Matrix m = new Matrix();
@@ -23,9 +23,23 @@ namespace Plotter3
 
         public InternalAxis()
         {
-            InitializeComponent();
+            InitializeComponent();            
+
             xGridPen.DashStyle = DashStyle.Dot;
             yGridPen.DashStyle = DashStyle.Dot;
+
+            if (orientation == OrientationType.Horizontal)
+            {
+                getPointsHor();
+                Cursor = Cursors.SizeWE;
+                Paint += PaintHorizontalAxis;
+            }
+            else
+            {
+                getPointsVert();
+                Cursor = Cursors.SizeNS;
+                Paint += PaintVerticalAxis;
+            }
         }
 
         [DefaultValue(OrientationType.Horizontal), Description("Axis orientation")]
@@ -60,6 +74,55 @@ namespace Plotter3
                 getPointsVert();
                 Paint += PaintVerticalAxis;
             }
+
+            Margin = new Padding(0, 0, 0, 0);
+        }
+        
+        public void FitFont()
+        {
+            if (ParentForm == null) return;
+            float w = ClientRectangle.Width;
+            float h = ClientRectangle.Height;
+            float size = smallFont.Size;
+
+            Graphics g = ParentForm.CreateGraphics();            
+
+            if (orientation == OrientationType.Horizontal)
+            {
+                float baseH = g.MeasureString("123", smallFont).Height;                                
+                if (baseH > h / 1.5)
+                    do
+                    {
+                        size--;
+                        smallFont = new Font("Calibri", size, FontStyle.Bold);
+                        baseH = g.MeasureString("123", smallFont).Height;
+                    } while (baseH > h / 1.5);
+                else
+                    do
+                    {
+                        size++;
+                        smallFont = new Font("Calibri", size, FontStyle.Bold);
+                        baseH = g.MeasureString("123", smallFont).Height;
+                    } while (baseH < h / 1.5);
+            }            
+            else
+            {
+                float baseW = g.MeasureString("12345", smallFont).Width;
+                if (baseW > w)
+                    do
+                    {
+                        size--;
+                        smallFont = new Font("Calibri", size, FontStyle.Bold);
+                        baseW = g.MeasureString("12345", smallFont).Width;
+                    } while (baseW > w);
+                else
+                    do
+                    {
+                        size++;
+                        smallFont = new Font("Calibri", size, FontStyle.Bold);
+                        baseW = g.MeasureString("12345", smallFont).Width;
+                    } while (baseW < w);
+            }
         }
 
         public void getPointsHor()
@@ -91,6 +154,8 @@ namespace Plotter3
         public void setMatrix(Matrix matr)
         {
             m = matr;
+            Update();
+            Invalidate();
         }
 
         private void PaintHorizontalAxis(object sender, PaintEventArgs e)
@@ -118,12 +183,12 @@ namespace Plotter3
                 xp = ScreenPoint(new PointF(x, 0), m);
                 //g.DrawLine(Pens.Blue, xp.X, xp.Y, xp.X, xp.Y + 20);
                 g.DrawLine(Pens.Blue, xp.X, 0, xp.X, 10);
-                g.DrawLine(xGridPen, xp.X, 10, xp.X, startP.Y);
-                g.DrawString(Math.Round(x, 3).ToString(), smallFont, Brushes.Blue, xp.X + 3, -2);
+                g.DrawLine(xGridPen, xp.X, 10, xp.X, ClientRectangle.Height / 1.5f);
+                g.DrawString(string.Format("{0, 5}", Math.Round(x, 3)), smallFont, Brushes.Blue, xp.X, ClientRectangle.Height - g.MeasureString(x.ToString(), smallFont).Height);
                 x += step_x;
                 kx += 1;
             } while (xp.X < endP.X && kx < 64);
-            g.DrawString("msec", smallFont, Brushes.Blue, endP.X - 60, 15);
+            g.DrawString("msec", smallFont, Brushes.Blue, Left + ClientRectangle.Width - g.MeasureString("msec", smallFont).Width - 5, 0);
         }
 
         private void PaintVerticalAxis(object sender, PaintEventArgs e)
@@ -169,7 +234,7 @@ namespace Plotter3
                 y -= step_y;
                 ky += 1;
             } while (ky < 64);
-            g.DrawString("rpm", smallFont, Brushes.Red, 25, endP.Y - 30);
+            g.DrawString("rpm", smallFont, Brushes.Red, ClientRectangle.Width - g.MeasureString("rpm", smallFont).Width, endP.Y - 30);
         }
 
         public enum OrientationType
@@ -191,7 +256,8 @@ namespace Plotter3
             if (orientation == OrientationType.Horizontal)            
                 getPointsHor();             
             else            
-                getPointsVert();             
+                getPointsVert();
+            FitFont();
         }
 
         private PointF ScreenPoint(PointF scr, Matrix m)

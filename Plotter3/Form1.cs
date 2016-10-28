@@ -66,6 +66,11 @@ namespace Plotter3
 
         }
 
+        private void internalAxis1_Load(object sender, EventArgs e)
+        {
+
+        }
+
         private void SerializeAll_Click(object sender, EventArgs e)
         {
                         

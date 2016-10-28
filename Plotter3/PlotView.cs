@@ -108,15 +108,10 @@ namespace Plotter3
         HatchBrush htb = new HatchBrush(HatchStyle.BackwardDiagonal, Color.LightBlue, Color.Transparent);
         private void C_Paint(object sender, PaintEventArgs e)
         {
+            foreach (Control cont in c.Controls)            
+                if (cont is InternalAxis)                
+                    ((InternalAxis)cont).setMatrix(m);                    
 
-            foreach (Control cont in c.Controls)
-            {
-                if (cont is InternalAxis)
-                {                    
-                    ((InternalAxis)cont).setMatrix(m);
-                    cont.Update();
-                }                                                
-            }
             Graphics g = e.Graphics;                                   
             //foreach (Axis a in axes)
               //  a.Paint(m, g, c.ClientRectangle.Width, c.ClientRectangle.Height);
@@ -232,8 +227,8 @@ namespace Plotter3
 
                 //cam.Move(dx, dy);
                 ResetLeftAndRightX();                
-                m.Translate(dx, dy);
-                c.Invalidate();
+                m.Translate(dx, dy);                
+                c.Invalidate(true);
             }
             else if (e.Button == MouseButtons.Left)
             {
