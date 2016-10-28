@@ -129,10 +129,10 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.internalAxis3.BackColor = System.Drawing.Color.White;
             this.internalAxis3.Cursor = System.Windows.Forms.Cursors.SizeWE;
-            this.internalAxis3.Location = new System.Drawing.Point(41, 732);
+            this.internalAxis3.Location = new System.Drawing.Point(41, 728);
             this.internalAxis3.Margin = new System.Windows.Forms.Padding(0);
             this.internalAxis3.Name = "internalAxis3";
-            this.internalAxis3.Size = new System.Drawing.Size(713, 66);
+            this.internalAxis3.Size = new System.Drawing.Size(716, 70);
             this.internalAxis3.TabIndex = 2;
             // 
             // internalAxis2

@@ -178,17 +178,36 @@ namespace Plotter3
             PointF origin = DataPoint(startP, m);
             float x = ((int)(origin.X / step_x) + 1) * step_x;
             PointF xp = ScreenPoint(new PointF(x, 0), m);
+            List<ValPos> labels = new List<ValPos>();
             do
             {
                 xp = ScreenPoint(new PointF(x, 0), m);
                 //g.DrawLine(Pens.Blue, xp.X, xp.Y, xp.X, xp.Y + 20);
                 g.DrawLine(Pens.Blue, xp.X, 0, xp.X, 10);
                 g.DrawLine(xGridPen, xp.X, 10, xp.X, ClientRectangle.Height / 1.5f);
-                g.DrawString(string.Format("{0, 5}", Math.Round(x, 3)), smallFont, Brushes.Blue, xp.X, ClientRectangle.Height - g.MeasureString(x.ToString(), smallFont).Height);
+                //g.DrawString(string.Format("{0, 5}", Math.Round(x, 3)), smallFont, Brushes.Blue, xp.X, ClientRectangle.Height - g.MeasureString(x.ToString(), smallFont).Height);
+                labels.Add(new ValPos((float)Math.Round(x, 3), xp.X));
                 x += step_x;
                 kx += 1;
             } while (xp.X < endP.X && kx < 64);
-            g.DrawString("msec", smallFont, Brushes.Blue, Left + ClientRectangle.Width - g.MeasureString("msec", smallFont).Width - 5, 0);
+
+            float biggestValue = 0;
+            foreach (ValPos vp in labels)
+                if (Math.Abs(Math.Round(vp.value)) > biggestValue)
+                    biggestValue = (float)Math.Round(Math.Abs(vp.value));
+            float log = (float)Math.Floor(Math.Log10(biggestValue));
+            if (biggestValue < 10) log = 1;
+            log--;
+            float coeff = (float)Math.Pow(10, log);
+
+            foreach (ValPos vp in labels)
+                g.DrawString(string.Format("{0, 5}", Math.Round(vp.value / coeff, 5)), smallFont, Brushes.Blue, vp.pos, ClientRectangle.Height - g.MeasureString(vp.value.ToString(), smallFont).Height);
+
+            Font titleFont = GetAxisHorTitleFont(ClientRectangle.Height, "msec x" + coeff.ToString());
+            //g.DrawString("rpm x" + coeff.ToString(), titleFont, Brushes.Red, ClientRectangle.Width - g.MeasureString("rpm x" + coeff.ToString(), titleFont).Width, endP.Y - 30);
+
+
+            g.DrawString("msec x" + coeff.ToString(), titleFont, Brushes.Blue, ClientRectangle.Width - g.MeasureString("msec x" + coeff.ToString(), titleFont).Width - 5, -10);
         }
 
         private void PaintVerticalAxis(object sender, PaintEventArgs e)
@@ -211,13 +230,15 @@ namespace Plotter3
             PointF origin = DataPoint(startP, m);
             float y = ((int)(origin.Y / step_y) + 1) * step_y;
             PointF yp = ScreenPoint(startP, m);
+            List<ValPos> labels = new List<ValPos>();
             do
             {
                 yp = ScreenPoint(new PointF(startP.X, y), m);
                 //g.DrawLine(Pens.Red, yp.X, yp.Y, yp.X-20, yp.Y);
                 g.DrawLine(Pens.Red, 0, yp.Y, 10, yp.Y);
                 g.DrawLine(yGridPen, 10, yp.Y, startP.X, yp.Y);
-                g.DrawString(Math.Round(y, 3).ToString(), smallFont, Brushes.Red, 0, yp.Y);
+                //g.DrawString(string.Format("{0, 5}", Math.Round(y, 3)), smallFont, Brushes.Red, 0, yp.Y);
+                labels.Add(new ValPos((float)Math.Round(y, 5), yp.Y));
                 y += step_y;
                 ky += 1;
             } while (yp.Y > 0 && ky < 64);
@@ -230,11 +251,79 @@ namespace Plotter3
                 //g.DrawLine(Pens.Red, yp.X, yp.Y, yp.X-20, yp.Y);
                 g.DrawLine(Pens.Red, 0, yp.Y, 10, yp.Y);
                 g.DrawLine(yGridPen, 10, yp.Y, startP.X, yp.Y);
-                g.DrawString(Math.Round(y, 5).ToString(), smallFont, Brushes.Red, 0, yp.Y);
+                //g.DrawString(string.Format("{0, 5}", Math.Round(y, 5)), smallFont, Brushes.Red, 0, yp.Y);
+                labels.Add(new ValPos((float)Math.Round(y, 5), yp.Y));
                 y -= step_y;
                 ky += 1;
-            } while (ky < 64);
-            g.DrawString("rpm", smallFont, Brushes.Red, ClientRectangle.Width - g.MeasureString("rpm", smallFont).Width, endP.Y - 30);
+            } while (ky < 64);            
+
+            float biggestValue = 0;
+            foreach (ValPos vp in labels)
+                if (Math.Abs(Math.Round(vp.value)) > biggestValue)
+                    biggestValue = (float)Math.Round(Math.Abs(vp.value));
+            float log = (float)Math.Floor(Math.Log10(biggestValue));
+            if (biggestValue < 10) log = 1;
+            log--;
+            float coeff = (float)Math.Pow(10, log);
+
+            foreach (ValPos vp in labels)
+                g.DrawString(string.Format("{0, 5}", Math.Round(vp.value / coeff, 5)), smallFont, Brushes.Red, 0, vp.pos);
+
+            Font titleFont = GetAxisVertTitleFont(ClientRectangle.Width, "rpm x" + coeff.ToString());
+            g.DrawString("rpm x"+coeff.ToString(), titleFont, Brushes.Red, ClientRectangle.Width - g.MeasureString("rpm x"+coeff.ToString(), titleFont).Width, endP.Y - 30);
+        }
+
+        public Font GetAxisHorTitleFont(float height, string title)
+        {
+            float size = 4;
+            Font font = new Font("Calibri", size, FontStyle.Bold);
+            if (title.Length < 1) return font;
+            Graphics g = CreateGraphics();
+            float titleH = g.MeasureString(title, font).Height / 2;
+            if (titleH < height / 2)
+            {
+                do
+                {
+                    size++;
+                    font = new Font("Calibri", size, FontStyle.Bold);
+                    titleH = g.MeasureString(title, font).Height / 2;
+                } while (titleH < height / 2);
+            }
+            font = new Font("Calibri", size-1, FontStyle.Bold);
+            return font;
+        }
+
+        public Font GetAxisVertTitleFont(float width, string title)
+        {
+            float size = 13;            
+            Font font = new Font("Calibri", size, FontStyle.Bold);
+            if (title.Length < 1) return font;
+            Graphics g = CreateGraphics();
+            float titleW = g.MeasureString(title, font).Width;
+            if (titleW > width)
+            {
+                do
+                {
+                    size--;
+                    font = new Font("Calibri", size, FontStyle.Bold);
+                    titleW = g.MeasureString(title, font).Width;
+                } while (titleW > width);
+            }
+            else {
+                title += "a";
+                titleW = g.MeasureString(title, font).Width;
+                if (titleW < width)
+                {
+                    title.Remove(title.Length - 2, 2);
+                    do
+                    {
+                        size++;
+                        font = new Font("Calibri", size, FontStyle.Bold);
+                        titleW = g.MeasureString(title, font).Width;
+                    } while (titleW < width);
+                }
+            }
+            return font;
         }
 
         public enum OrientationType
@@ -265,6 +354,16 @@ namespace Plotter3
             PointF[] po = new PointF[] { new PointF(scr.X, scr.Y) };
             m.TransformPoints(po);
             return po[0];
+        }
+    }
+
+    struct ValPos
+    {
+        public float value, pos;
+        public ValPos(float value, float pos)
+        {
+            this.value = value;
+            this.pos = pos;
         }
     }
 }

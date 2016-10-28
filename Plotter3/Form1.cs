@@ -39,7 +39,7 @@ namespace Plotter3
 
             Dictionary<byte, Plot> plots = Plot.CreatePlotsFromFile(p1,args[1]);
 
-            pv1.AddPlots(new List<Plot>() { plots[byte.Parse(args[2])] });//plots.Select(kvp => kvp.Value).ToList());
+            pv1.AddPlots(new List<Plot>() { plots[byte.Parse(args[3])] });//plots.Select(kvp => kvp.Value).ToList());
             //pv2.AddPlots(new List<Plot>() { plots[byte.Parse(args[3])] });
             pv1.MatrixSavingOn(this);
             //pv2.MatrixSavingOn(this);            
