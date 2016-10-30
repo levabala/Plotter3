@@ -113,14 +113,14 @@ namespace Plotter3
                     {
                         size--;
                         smallFont = new Font("Calibri", size, FontStyle.Bold);
-                        baseW = g.MeasureString("12345", smallFont).Width;
+                        baseW = g.MeasureString("1235", smallFont).Width;
                     } while (baseW > w);
                 else
                     do
                     {
                         size++;
                         smallFont = new Font("Calibri", size, FontStyle.Bold);
-                        baseW = g.MeasureString("12345", smallFont).Width;
+                        baseW = g.MeasureString("1235", smallFont).Width;
                     } while (baseW < w);
             }
         }

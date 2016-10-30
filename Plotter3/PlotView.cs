@@ -14,10 +14,10 @@ namespace Plotter3
         private Matrix m = new Matrix();
         private Timer wheelEndTimer = new Timer();
         public List<Plot> plots = new List<Plot>();
-        private float leftX, rightX;
-        public float absMin, absMax;
-        public float xRange = 1;
-        public float maxLeftX, maxRightX;
+        private double leftX, rightX;
+        public double absMin, absMax;
+        public double xRange = 1;
+        public double maxLeftX, maxRightX;
         private bool setted = false;
         public List<Axis> axes = new List<Axis>();
         string PLOTTER_TRANSFORM_REGKEY = "";
@@ -82,7 +82,7 @@ namespace Plotter3
             }            
         }
 
-        public void UpdateViewRange(float left, float right)
+        public void UpdateViewRange(double left, double right)
         {
             Parallel.ForEach(plots, (p) =>
             {
@@ -117,8 +117,8 @@ namespace Plotter3
               //  a.Paint(m, g, c.ClientRectangle.Width, c.ClientRectangle.Height);
 
             //draw information strings 
-            /*float x = 10;
-            float y = 10;
+            /*double x = 10;
+            double y = 10;
             foreach (string inf in information)
             {
                 SizeF stringSize = g.MeasureString(inf, Font);
@@ -127,7 +127,7 @@ namespace Plotter3
             }*/
 
             //drawing plots
-            DrawPlots(g, m);
+            DrawPlots(g, m);                        
             g.FillRectangle(htb, rectP1.X, rectP1.Y, rectP2.X - rectP1.X, rectP2.Y - rectP1.Y);
         }
 
@@ -143,16 +143,27 @@ namespace Plotter3
                 if (p.pointsToDraw.Length < 2) continue;
                 if (p.averagePointOn)
                 {
-                    PointF[] avps = p.averagePoints.ToArray();
+                    PointF[] avps = PointDArrToPointFArr(p.averagePoints.ToArray());
                     m.TransformPoints(avps);
                     //avLinePen = new Pen(c, 0.5f);
                     //g.DrawBeziers(p.avLinePen, avps);
                 }
 
-                PointF[] ps = p.pointsToDraw.ToArray(); //clone it!                
+                PointF[] ps = PointDArrToPointFArr(p.pointsToDraw.ToArray()); //clone it!                
                 m.TransformPoints(ps);
                 g.DrawLines(new Pen(p.color), ps);
             }
+        }
+
+        private PointF[] PointDArrToPointFArr(PointD[] arr)
+        {
+            PointF[] output = new PointF[arr.Length];
+            Parallel.For(0, arr.Length, index =>
+            {
+                output[index] = arr[index].ToPointF();
+            });
+
+            return output;
         }
 
         #region MouseListeners        
@@ -189,7 +200,7 @@ namespace Plotter3
                 temp.Translate(-lt.X, -rb.Y);
 
                 bool wrong = false;
-                foreach (float el in temp.Elements)
+                foreach (double el in temp.Elements)
                     if (el < -1e+8 || el > 1e+8) wrong = true;
                 if (temp.OffsetX < -1e+8 || temp.OffsetX > 1e+8 || temp.OffsetY < -1e+8 || temp.OffsetY > 1e+8 || !temp.IsInvertible) wrong = true;
 
@@ -197,11 +208,13 @@ namespace Plotter3
                 {
                     m = temp;
                     RememberMatrix();
+                    ResetLeftAndRightX();
+                    UpdatePlots();
                 }
             }
             else if (e.Button == MouseButtons.Right)
             {
-                float delta = Math.Abs(lastmousepos.X - mousedownposS.X) + Math.Abs(lastmousepos.Y - mousedownposS.Y);
+                double delta = Math.Abs(lastmousepos.X - mousedownposS.X) + Math.Abs(lastmousepos.Y - mousedownposS.Y);
                 if (delta > 100) RememberMatrix();
             }
             rectP1 = rectP2;
@@ -297,7 +310,7 @@ namespace Plotter3
             m = new Matrix();
             m.Scale(1, -1);
             m.Translate(0, -c.ClientSize.Height);
-            m.Scale(c.ClientSize.Width / plot.xRange, c.ClientSize.Height / (plot.maxValue - plot.minValue));
+            m.Scale((float)(c.ClientSize.Width / plot.xRange), (float)(c.ClientSize.Height / (plot.maxValue - plot.minValue)));
 
             c.Invalidate();
         }
@@ -378,8 +391,8 @@ namespace Plotter3
             m = new Matrix();
             m.Scale(1, -1);
             m.Translate(0, -c.ClientSize.Height);
-            float scalex = c.ClientSize.Width / xRange;
-            float scaley = c.ClientSize.Height / (absMax - absMin);
+            float scalex = (float)(c.ClientSize.Width / xRange);
+            float scaley = (float)(c.ClientSize.Height / (absMax - absMin));
             if (absMax - absMin == 0) scaley = 1;
             m.Scale(scalex, scaley);
 
@@ -414,7 +427,7 @@ namespace Plotter3
             temp.Translate(po.X, po.Y);
             temp.Scale(kx, ky);
             temp.Translate(-po.X, -po.Y);
-            foreach (float el in temp.Elements)
+            foreach (double el in temp.Elements)
                 if (el < -1e+8 || el > 1e+8) return;
             if (temp.OffsetX < -1e+8 || temp.OffsetX > 1e+8 || temp.OffsetY < -1e+8 || temp.OffsetY > 1e+8 || !temp.IsInvertible) return;
             m = temp;

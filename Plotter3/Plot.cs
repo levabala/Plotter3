@@ -6,35 +6,46 @@ using System.Drawing;
 namespace Plotter3
 {    
     class Plot
-    {
-        public PointF[] pointsToDraw = new PointF[0];        
+    {        
+        /*{
+            { 1, new int[] {1} },
+            { 2, new int[] {1,2} },
+            { 3, new int[] {1,3} },
+            { 4, new int[] {1,2,4} },
+            { 5, new int[] {1,5} },
+            { 6, new int[] {1,3,6} },
+            { 7, new int[] {1,7} },
+            { 8, new int[] {1} },
+        }; idiotizm*/
+
+        public PointD[] pointsToDraw = new PointD[0];        
         public Color color;
-        public float xRange, yRange;
-        public PointF[] averagePoints;        
+        public double xRange, yRange;
+        public PointD[] averagePoints;        
         public bool averagePointOn = true;
         public int ActiveLayerIndex;
-        public List<PointF[]> layers;
-        public float minValue, maxValue;        
+        public List<PointD[]> layers = new List<PointD[]>();
+        public double minValue, maxValue;        
 
         int minPointsCount = 2500;
         int maxPointsCount = 4000;        
 
         int[] lastBorders;
-        float[] lastRange;        
+        double[] lastRange;        
 
-        const float divisor = 2f;
+        const double divisor = 2f;
         const int buffer = 10; // 10 points
 
-        public Plot(List<PointF> points, float min, float max, Color c)
+        public Plot(List<PointD> points, double min, double max, Color c)
         {
             minValue = min;
             maxValue = max;
-            color = c;            
+            color = c;
 
             //layers creating
-            layers = new List<PointF[]>();
+            layers = new List<PointD[]>();
             layers.Add(points.ToArray());
-            float count = (float)points.Count / divisor;
+            double count = points.Count / divisor;
             int step = 1;
             do
             {
@@ -46,7 +57,7 @@ namespace Plotter3
             //let's choose the smallest layer
             ActiveLayerIndex = layers.Count - 1;
             lastBorders = new int[] { 0, layers[ActiveLayerIndex].Length - 1 };
-            lastRange = new float[] { points[0].X, points[points.Count - 1].X };
+            lastRange = new double[] { points[0].X, points[points.Count - 1].X };
 
             xRange = lastRange[1] - lastRange[0];
             if (xRange == 0) xRange = 1;
@@ -54,16 +65,16 @@ namespace Plotter3
             if (yRange == 0) yRange = 1;
 
             //average line
-            List<PointF> list = new List<PointF>();
+            List<PointD> list = new List<PointD>();
             step = points.Count / 3400;
-            float buffer = 0;
+            double buffer = 0;
             int a = 0;
-            foreach (PointF p in points)
+            foreach (PointD p in points)
             {
                 buffer += p.Y;
                 if (a >= step)
                 {
-                    list.Add(new PointF(p.X, buffer / a));
+                    list.Add(new PointD(p.X, buffer / a));
                     buffer = 0;
                     a = 0;
                 }
@@ -87,15 +98,15 @@ namespace Plotter3
             averagePointOn = true;
         }
 
-        public void UpdateViewRange(float left, float right)
+        public void UpdateViewRange(double left, double right)
         {
-            float RangeDelta = (right - left) - (lastRange[1] - lastRange[0]);
+            double RangeDelta = (right - left) - (lastRange[1] - lastRange[0]);
             pointsToDraw = GetPointsInRange(left, right, (int)RangeDelta).ToArray();            
         }
 
-        private PointF[] GetPointsInRange(float lx, float rx, int scaleDir)
+        private PointD[] GetPointsInRange(double lx, double rx, int scaleDir)
         {
-            PointF[] outPoints;
+            PointD[] outPoints;
 
             int currLayerIndex = ActiveLayerIndex;            
             int[] borders = lastBorders;            
@@ -114,7 +125,7 @@ namespace Plotter3
                 outPoints = layers[currLayerIndex].Skip(borders[0]).Take(borders[1] - borders[0]).ToArray();
 
                 lastBorders = borders;
-                lastRange = new float[] { lx, rx };
+                lastRange = new double[] { lx, rx };
 
                 return outPoints;
             }  */          
@@ -168,12 +179,12 @@ namespace Plotter3
 
             ActiveLayerIndex = currLayerIndex;
             lastBorders = borders;
-            lastRange = new float[] { lx, rx };
+            lastRange = new double[] { lx, rx };
 
             return outPoints;
         }        
 
-        private int[] NearBorders(PointF[] layer, float lx, float rx, int lastLeftIndex, int lastRightIndex)
+        private int[] NearBorders(PointD[] layer, double lx, double rx, int lastLeftIndex, int lastRightIndex)
         {
             int leftI = FindIndex(layer, lx, lastLeftIndex);
             int rightI = FindIndex(layer, rx, lastRightIndex);
@@ -181,9 +192,9 @@ namespace Plotter3
             return new int[] { leftI, rightI };
         }
 
-        private int[] NextBorders(PointF[] layer, PointF[] lastLayer, float lx, float rx, int lastLeftIndex, int lastRightIndex)
+        private int[] NextBorders(PointD[] layer, PointD[] lastLayer, double lx, double rx, int lastLeftIndex, int lastRightIndex)
         {            
-            float coeff = layer.Length / lastLayer.Length;
+            double coeff = layer.Length / lastLayer.Length;
 
             int apprLeftIndex = (int)(lastLeftIndex * coeff);
             int apprRightIndex = (int)(lastRightIndex * coeff);                        
@@ -194,12 +205,12 @@ namespace Plotter3
             return new int[] { leftI, rightI };
         }
 
-        private int FindIndex(PointF[] layer, float target, int startIndex)
+        private int FindIndex(PointD[] layer, double target, int startIndex)
         {
             if (startIndex > layer.Length - 1) startIndex = layer.Length - 1;
 
             int index = startIndex;
-            float value = layer[startIndex].X;
+            double value = layer[startIndex].X;
 
             if (value > target)            
                 for (int i = startIndex; i > 0; i--)
@@ -215,11 +226,11 @@ namespace Plotter3
                 }
             return index;
         }
-        private int[] GetBorders(List<PointF> layer, float lx, float rx)
+        private int[] GetBorders(List<PointD> layer, double lx, double rx)
         {
             int si = 0;
             int ei = layer.Count - 1;
-            foreach (PointF p in layer)
+            foreach (PointD p in layer)
             {
                 if (p.X >= lx) break;
                 si++;
@@ -234,12 +245,12 @@ namespace Plotter3
 
 
         #region Additional Functions
-        private List<PointF> MakeConvolution(List<PointF> src, int step)
+        private List<PointD> MakeConvolution(List<PointD> src, int step)
         {
-            List<PointF> layer = new List<PointF>();
+            List<PointD> layer = new List<PointD>();
             for (int i = 0; i < src.Count - step; i += step)
             {
-                PointF[] minmax = getMinAndMax(src.GetRange(i, step));
+                PointD[] minmax = getMinAndMax(src.GetRange(i, step));
                 if (minmax[0].X > minmax[1].X)
                 {
                     layer.Add(minmax[1]);
@@ -254,15 +265,17 @@ namespace Plotter3
             return layer;
         }
 
-        private PointF[] getMinAndMax(List<PointF> ps)
+        private PointD[] getMinAndMax(List<PointD> ps)
         {
-            PointF[] minmax = new PointF[] { new PointF(ps[0].X, ps[0].Y), new PointF(0, 0) }; //[0] - min, [1] - max            
-            foreach (PointF p in ps)
+            PointD[] minmax = new PointD[] { new PointD(ps[0].X, ps[0].Y), new PointD(0, 0) }; //[0] - min, [1] - max            
+            foreach (PointD p in ps)
             {
                 if (minmax[0].Y > p.Y) minmax[0] = p;
                 if (minmax[1].Y < p.Y) minmax[1] = p;
                 //minmax[1].X = minmax[0].X;
             }
+            minmax[0].X = ps[0].X;
+            minmax[1].X = ps[ps.Count - 1].X;
 
             return minmax;
         }
@@ -277,19 +290,19 @@ namespace Plotter3
 
             foreach (KeyValuePair<byte, long[]> pair in parsed)
             {
-                List<PointF> points = new List<PointF>();
+                List<PointD> points = new List<PointD>();
                 long[] data = pair.Value;
-                float max = 0;
-                float min = (float)(60.0 / (data[1] - data[0] * 1024 * 16e-9));
-                float lastrpm = 0;
+                double max = 0;
+                double min = (double)(60.0 / (data[1] - data[0] * 1024 * 16e-9));
+                double lastrpm = 0;
 
                 for (int i = 1; i < data.Length; i += 1)
                 {
                     double tt = data[i] - data[i - 1];
                     if (tt == 0) continue;
                     double rpm = 60.0 / (tt * 1024 * 16e-9);
-                    float rpmf = (float)rpm;
-                    points.Add(new PointF((float)(data[i] * 16e-9), rpmf));
+                    double rpmf = (double)rpm;
+                    points.Add(new PointD((double)(data[i] * 16e-9), rpmf));
                     if (rpm > max) max = rpmf;
                     else if (rpm < min) min = rpmf;
                     lastrpm = rpmf;
@@ -300,5 +313,127 @@ namespace Plotter3
             }
             return output;
         }
+    }    
+
+    class PlotStretch
+    {
+        Dictionary<int, int[]> factors = new Dictionary<int, int[]>();
+
+        public PointD[] pointsToDraw = new PointD[0];
+        public Color color;
+        public double xRange, yRange;
+        public PointD[] averagePoints;
+        public bool averagePointOn = true;
+        public int ActiveLayerIndex = 0;        
+
+        /*public delegate void AddPointDunction(PointD p);
+        AddPointDunction ap;*/
+        public List<List<PointD>> layers = new List<List<PointD>>()
+        {
+            new List<PointD>()            
+        };
+        public double minValue, maxValue;
+
+        int minPointsCount = 2500;
+        int maxPointsCount = 4000;
+        int CurrentLayerMaxPoints;        
+
+        int[] lastBorders;
+        double[] lastRange;
+
+        const double divisor = 2;
+        const int buffer = 10; // 10 points
+
+        public PlotStretch(Color c)
+        {
+            CurrentLayerMaxPoints = minPointsCount;
+
+            color = c;
+            xRange = yRange = minValue = maxValue = 0;
+            //ap = AddTwoFirstPoints;
+        }
+        
+        public void AddPoint(PointD p)
+        {
+            layers[0].Add(p);
+            for (int i = 1; i < layers.Count; i++)
+            {
+                List<PointD> layer = layers[i];
+                if (layers[0].Count % (i + 1) == 0)
+                {
+
+                }
+                    
+            }
+            if (layers.Count > CurrentLayerMaxPoints)
+            {
+                layers.Add(new List<PointD>());
+                CurrentLayerMaxPoints *= 2;
+            }   
+        }        
+
+        private PointD[] getMinAndMax(List<PointD> ps)
+        {
+            PointD[] minmax = new PointD[] { new PointD(ps[0].X, ps[0].Y), new PointD(0, 0) }; //[0] - min, [1] - max            
+            foreach (PointD p in ps)
+            {
+                if (minmax[0].Y > p.Y) minmax[0] = p;
+                if (minmax[1].Y < p.Y) minmax[1] = p;
+                //minmax[1].X = minmax[0].X;
+            }
+
+            /*PointD buff;
+            if (minmax[0].X > minmax[1].X)
+            {
+                buff = minmax[0].X
+            }
+            else
+            {
+                layer.Add(minmax[0]);
+                layer.Add(minmax[1]);
+            }  */          
+
+            return minmax;
+        }
+    }
+    
+    struct PointD
+    {
+        public double X,Y;
+
+        public PointD(double x, double y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public PointF ToPointF()
+        {
+            return new PointF((float)X, (float)Y);
+        }
     }
 }
+
+/*private void AddTwoFirstPoints(PointD p)
+        {
+            layers[0].Add(p);
+            if (layers[0].Count >= 2) ap = AddOtherPoints;
+        }
+
+        private void AddOtherPoints(PointD p)
+        {
+            int layerI = (int)Math.Floor(Math.Log(layers[0].Count, 2));
+        }
+
+
+        private void FillFactors(int count)
+        {
+            factors[1] = new int[] { 1 };
+            for(int i = 2; i < count; i++)
+            {
+                List<int> buf = new List<int>() { i };
+                for (int i2 = 1; i2 < i; i2++)
+                    if (i % i2 == 0) buf.Add(i2);
+                factors[i] = buf.ToArray();
+            }
+        }*/
