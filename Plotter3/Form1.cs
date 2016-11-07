@@ -16,8 +16,9 @@ namespace Plotter3
         {
             InitializeComponent();
             pv1 = new PlotsView(PlotBox1);
-            pv1.HandleControlKeyDown(RestartMButton);
-            pv1.HandleControlKeyDown(SerializeAllButton);            
+            pv1.HandleControlKeyDown(RestartMButton);            
+            pv2 = new PlotsView(PlotBox2);
+            pv2.HandleControlKeyDown(RestartMButton);            
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -40,9 +41,9 @@ namespace Plotter3
             Dictionary<byte, Plot> plots = Plot.CreatePlotsFromFile(p1,args[1]);
 
             pv1.AddPlots(new List<Plot>() { plots[byte.Parse(args[2])] });//plots.Select(kvp => kvp.Value).ToList());
-            //pv2.AddPlots(new List<Plot>() { plots[byte.Parse(args[3])] });
+            pv2.AddPlots(new List<Plot>() { plots[byte.Parse(args[3])] });
             pv1.MatrixSavingOn(this);
-            //pv2.MatrixSavingOn(this);   
+            pv2.MatrixSavingOn(this);   
 
             //PlotScretch testP = new PlotScretch(Color.Black);                        
         }
@@ -55,7 +56,7 @@ namespace Plotter3
         private void RestartM_Click(object sender, EventArgs e)
         {
             pv1.ResetMatrix();
-            //pv2.ResetMatrix();            
+            pv2.ResetMatrix();            
         }
 
         private void splitContainer1_Panel1_Paint(object sender, PaintEventArgs e)

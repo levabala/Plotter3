@@ -293,19 +293,18 @@ namespace Plotter3
                 List<PointD> points = new List<PointD>();
                 long[] data = pair.Value;
                 double max = 0;
-                double min = (double)(60.0 / (data[1] - data[0] * 1024 * 16e-9));
+                double min = (60.0 / (data[1] - data[0] * 1024 * 16e-9));
                 double lastrpm = 0;
 
                 for (int i = 1; i < data.Length; i += 1)
                 {
                     double tt = data[i] - data[i - 1];
                     if (tt == 0) continue;
-                    double rpm = 60.0 / (tt * 1024 * 16e-9);
-                    double rpmf = (double)rpm;
-                    points.Add(new PointD((double)(data[i] * 16e-9), rpmf));
-                    if (rpm > max) max = rpmf;
-                    else if (rpm < min) min = rpmf;
-                    lastrpm = rpmf;
+                    double rpm = 60.0 / (tt * 1024 * 16e-9);                    
+                    points.Add(new PointD((data[i] * 16e-9), rpm));
+                    if (rpm > max) max = rpm;
+                    else if (rpm < min) min = rpm;
+                    lastrpm = rpm;
                 }
 
                 Plot plot = new Plot(points, min, max, ps.Find(p => p.signalCode == pair.Key).color);
