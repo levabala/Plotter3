@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+//using System.Windows.Forms.Form.ControlCollection;
 
 namespace Plotter4
 {
     class SimplePlot : Plot
     {
-        double? minX, maxX, minY, maxY;
-        public SimplePlot(Control c) : base(c)
+        double? minX, maxX, minY, maxY;        
+        public SimplePlot(Control c, Control.ControlCollection ControlsToCaptureMouseWheel) : base(c, ControlsToCaptureMouseWheel)
         {
             NewDMLoaded += OnDMLoaded;
             control.Paint += Control_Paint;
@@ -18,9 +19,8 @@ namespace Plotter4
 
         private void Control_Paint(object sender, PaintEventArgs e)
         {
-            foreach (Control cont in control.Controls)
-                if (cont is InternalAxis)
-                    ((InternalAxis)cont).setMatrix(m);
+            foreach (InternalAxis axis in axes)
+                axis.setMatrix(m);
         }
 
         private void OnDMLoaded(double minX, double maxX, double minY, double maxY)

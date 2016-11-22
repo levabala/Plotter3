@@ -5,6 +5,7 @@ namespace Plotter4
     abstract class DrawStruct
     {
         public Pen pen;
+        public ViewStyle drawStyle = ViewStyle.Lines;
         public PointF[] outputArr;
         public string log; //debug
 
@@ -17,5 +18,5 @@ namespace Plotter4
         {
             pen = p;
         }        
-    }
+    }    
 }

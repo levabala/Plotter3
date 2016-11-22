@@ -18,12 +18,15 @@ namespace Plotter4
         Pen xGridPen = new Pen(Brushes.Blue, 0.5f);
         Pen yGridPen = new Pen(Brushes.Green, 0.5f);
         Matrix m = new Matrix();
+        Control TargetControl;
 
         PointF startP, endP;
 
         public InternalAxis()
         {
-            InitializeComponent();            
+            InitializeComponent();
+
+            TargetControl = Parent;
 
             xGridPen.DashStyle = DashStyle.Dot;
             yGridPen.DashStyle = DashStyle.Dot;
@@ -40,6 +43,11 @@ namespace Plotter4
                 Cursor = Cursors.SizeNS;
                 Paint += PaintVerticalAxis;
             }
+        }
+
+        public void SetTargetControl(Control c)
+        {
+            TargetControl = c;
         }
 
         [DefaultValue(OrientationType.Horizontal), Description("Axis orientation")]

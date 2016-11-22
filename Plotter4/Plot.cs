@@ -12,13 +12,14 @@ namespace Plotter4
 {
     abstract class Plot
     {
-        protected List<DrawStruct> dms = new List<DrawStruct>();
+        public List<DrawStruct> dss = new List<DrawStruct>();
         protected Matrix m = new Matrix();
         protected Control control = null;
         protected string PLOTTER_TRANSFORM_REGKEY = "";
         protected PointF lastMousePoint;
         protected PointF lastMousePointD;
         protected Timer wheelEndTimer = new Timer();
+        protected List<InternalAxis> axes = new List<InternalAxis>();
 
         protected double LeftBorderX, RightBorderX;
 
@@ -33,6 +34,8 @@ namespace Plotter4
         //public delegate void ControlFun(object sender, EventArgs e);
         //public ControlFun ControlF;      
 
+        public Graphics graphicsProps;
+
         public List<Pen> pallete = new List<Pen>()
         {
             new Pen(Color.DarkGreen, 2),
@@ -42,29 +45,44 @@ namespace Plotter4
             new Pen(Color.SandyBrown, 2)
         };
 
-        public Plot(Control c)
+        public Plot(Control c, Control.ControlCollection ControlsToCaptureMouseWheel)
         {
             Parse = ParseRaw;
             Visualize = Draw;
             MatrixUpdate += OnMatrixUpdate;                   
 
-            SetTargetControl(c);
+            SetTargetControl(c, ControlsToCaptureMouseWheel);
 
             wheelEndTimer.Interval = 30;
-            wheelEndTimer.Tick += WheelEndTimer_Tick;
-        }        
+            wheelEndTimer.Tick += WheelEndTimer_Tick;            
+        }      
+        
+        public void AddAxisControl(InternalAxis axis)
+        {
+            axes.Add(axis);
+        }  
 
-        public void SetTargetControl(Control c)
+        public void SetTargetControl(Control c, Control.ControlCollection ControlsToCaptureMouseWheel)
         {
             if (control != null) control.Paint -= Draw;
             control = c;
             PLOTTER_TRANSFORM_REGKEY = "plotter_transform_" + control.Name;
+            graphicsProps = c.CreateGraphics();
 
             c.Paint += Draw;
             c.MouseMove += C_MouseMove;
+            c.MouseMove += C_MouseMoveFocusCap;
             c.MouseWheel += C_MouseWheel;
             c.MouseDown += C_MouseDown;
-            c.MouseUp += C_MouseUp;
+            c.MouseUp += C_MouseUp;            
+
+            foreach (Control cc in ControlsToCaptureMouseWheel)
+                cc.MouseWheel += C_MouseWheel;
+        }
+
+        private void C_MouseMoveFocusCap(object sender, MouseEventArgs e)
+        {
+            control.Focus();
         }
 
         private void C_MouseUp(object sender, MouseEventArgs e)
@@ -86,7 +104,7 @@ namespace Plotter4
         //Control functions
         protected void C_MouseMove(object sender, MouseEventArgs e)
         {
-            //...dms and matrix manipulations...
+            //...dss and matrix manipulations...
             if (e.Button == MouseButtons.Right)
             {                
                 PointF MouseDataPoint = DataPoint(e.Location);
@@ -100,7 +118,7 @@ namespace Plotter4
 
         protected void C_MouseWheel(object sender, MouseEventArgs e)
         {
-            //...dms and matrix manipulations...
+            //...dss and matrix manipulations...
             PointF pos = DataPoint(e.Location);
             bool inXscale = e.Location.Y < 50;
             bool inYscale = e.Location.X < 50;
@@ -148,20 +166,35 @@ namespace Plotter4
         {
             Rectangle drawArea = e.ClipRectangle;
             Graphics g = e.Graphics;
+            
+            g.SmoothingMode = graphicsProps.SmoothingMode;
+            g.InterpolationMode = graphicsProps.InterpolationMode;
+            g.CompositingMode = graphicsProps.CompositingMode;
+            g.CompositingQuality = graphicsProps.CompositingQuality;            
 
             //((Form)control).Text = string.Format("LeftX: {0}  RightX: {1}", LeftBorderX, RightBorderX);
 
-            foreach (DrawStruct dm in dms)
+            foreach (DrawStruct ds in dss)
             {
-                //PointF[] arr = dm.outputArr.Skip(dm.leftI).Take(dm.rightI-dm.leftI).ToArray();
-                PointF[] arr = dm.outputArr.ToArray();
+                //PointF[] arr = ds.outputArr.Skip(ds.leftI).Take(ds.rightI-ds.leftI).ToArray();
+                PointF[] arr = ds.outputArr.ToArray();
                 if (arr.Length < 2) return;
-                m.TransformPoints(arr);                
-                g.DrawLines(dm.pen, arr);
+                m.TransformPoints(arr);
+
+                switch (ds.drawStyle)
+                {
+                    case ViewStyle.Lines:
+                        g.DrawLines(ds.pen, arr);
+                        break;
+                    case ViewStyle.Points:
+                        foreach (PointF p in arr)
+                            g.DrawRectangle(ds.pen, p.X, p.Y, 1, 1);
+                        break;
+                }                
                 //g.FillEllipse(Brushes.Green, arr[0].X, arr[0].Y, 10, 10);
                 //g.FillEllipse(Brushes.Blue, arr.Last().X, arr.Last().Y, 10, 10);
 
-                ((Form)control).Text = dm.log;
+                //((Form)control).Text = ds.log;
             }            
         }
 
@@ -230,8 +263,8 @@ namespace Plotter4
                     lastrpm = rpm;
                 }
                 string id = Path.GetFileName(path) + pair.Key.ToString();
-                DrawStruct dm = new LayersManager(pallete[dms.Count], points, min, max, id, progressCallBack);                
-                dms.Add(dm);
+                DrawStruct ds = new LayersManager(pallete[dss.Count], points, min, max, id, progressCallBack);                
+                dss.Add(ds);
                 NewDMLoaded(points[0].X, points[points.Length-1].X, min, max);
                 GC.Collect();
             }
@@ -242,11 +275,11 @@ namespace Plotter4
         //DataManagers Updating 
         protected void UpdateDMS()
         {
-            foreach (DrawStruct dm in dms)
-                dm.UpdateOutputArray(LeftBorderX, RightBorderX);
-            /*Parallel.ForEach(dms, (dm) =>
+            foreach (DrawStruct ds in dss)
+                ds.UpdateOutputArray(LeftBorderX, RightBorderX);
+            /*Parallel.ForEach(dss, (ds) =>
             {
-                dm.UpdateOutputArray(LeftBorderX, RightBorderX);
+                ds.UpdateOutputArray(LeftBorderX, RightBorderX);
             });*/
 
             control.Invalidate();

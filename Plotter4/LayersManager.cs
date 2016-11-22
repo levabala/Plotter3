@@ -223,7 +223,7 @@ namespace Plotter4
             });
             return output;
         }
-    }        
+    }
 }
 
 /*          BackgroundWorker bw = new BackgroundWorker();
