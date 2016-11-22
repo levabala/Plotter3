@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Modules;
 
 
 namespace Plotter4
@@ -16,7 +15,7 @@ namespace Plotter4
     {
         public Form1()
         {
-            InitializeComponent();
+            InitializeComponent();            
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -30,8 +29,8 @@ namespace Plotter4
             for (int i = 2; i < args.Length; i++)
                 signals.Add(args[i]);
 
-            Plot p = new Plot();
-            p.Parse(path, signals.ToArray(), ProgressCallBack);
+            SimplePlot p = new SimplePlot(this);
+            p.Parse(path, signals.ToArray(), ProgressCallBack);           
         }        
 
         public void ProgressCallBack(double progress)

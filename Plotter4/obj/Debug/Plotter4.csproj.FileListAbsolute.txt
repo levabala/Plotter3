@@ -13,3 +13,4 @@ C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter4\obj\De
 C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter4\obj\Debug\Plotter4.csproj.GenerateResource.Cache
 C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter4\obj\Debug\Plotter4.exe
 C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter4\obj\Debug\Plotter4.pdb
+C:\Users\levabala\Documents\Visual Studio 2015\Projects\Plotter3\Plotter4\obj\Debug\Plotter4.InternalAxis.resources
