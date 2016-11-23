@@ -11,7 +11,7 @@ namespace Plotter4
     class SimplePlot : Plot
     {
         double? minX, maxX, minY, maxY;        
-        public SimplePlot(Control c, Control.ControlCollection ControlsToCaptureMouseWheel) : base(c, ControlsToCaptureMouseWheel)
+        public SimplePlot(Control c) : base(c)
         {
             NewDMLoaded += OnDMLoaded;
             control.Paint += Control_Paint;

@@ -123,7 +123,7 @@ namespace Plotter4
             else if (rightX < lastRightX)// ((layers[ActiveIndex].Length-1 > lastRightIndex) ? layers[ActiveIndex][lastRightIndex + 1].X : lastRightX)) //layers[ActiveIndex][lastRightIndex+1].X
             {
                 double x = lastRightX;
-                while (x > rightX)
+                while (x > rightX && x > 0)
                 {
                     rightIndex--;
                     x = layers[ActiveIndex][rightIndex].X;

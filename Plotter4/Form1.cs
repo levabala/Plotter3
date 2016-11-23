@@ -35,7 +35,8 @@ namespace Plotter4
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Show();            
+            Show(); 
+                       
             //Command Line Args Parsing
             string[] args = Environment.GetCommandLineArgs();            
             string path = args[1];
@@ -43,12 +44,20 @@ namespace Plotter4
             for (int i = 2; i < args.Length; i++)
                 signals.Add(args[i]);
 
-            SimplePlot p = new SimplePlot(DrawBox, new ControlCollection(this));
+            //create plot and set it on DrawBox Control
+            SimplePlot p = new SimplePlot(DrawBox);
+            
+            //adding axes
             p.AddAxisControl(internalAxis1);
             p.AddAxisControl(internalAxis2);
+
+            //loading the file (default parser is RawParser)
             p.Parse(path, signals.ToArray(), ProgressCallBack);
 
-            //init graphic changers                                    
+            //test custom points
+            p.AddDrawObject(new DrawStruct(Pens.Blue, new PointF[] { new PointF(10, 10), new PointF(50, 400), new PointF(200, 1000) }));
+
+            //interface for plot's graphics object properties  *my english...*
             propertyGrid1.SelectedObject = p;     
         }        
 

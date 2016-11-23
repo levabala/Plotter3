@@ -2,7 +2,7 @@
 
 namespace Plotter4
 {
-    abstract class DrawStruct
+    class DrawStruct
     {
         public Pen pen;
         public ViewStyle drawStyle = ViewStyle.Lines;
@@ -17,6 +17,12 @@ namespace Plotter4
         public DrawStruct(Pen p)
         {
             pen = p;
-        }        
+        }                
+
+        public DrawStruct(Pen p, PointF[] array)
+        {
+            pen = p;
+            outputArr = array;
+        }
     }    
 }

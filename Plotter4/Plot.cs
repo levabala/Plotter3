@@ -77,13 +77,13 @@ namespace Plotter4
         }
         #endregion
 
-        public Plot(Control c, Control.ControlCollection ControlsToCaptureMouseWheel)
+        public Plot(Control c)
         {
             Parse = ParseRaw;
             Visualize = Draw;
             MatrixUpdate += OnMatrixUpdate;                   
 
-            SetTargetControl(c, ControlsToCaptureMouseWheel);
+            SetTargetControl(c);
 
             wheelEndTimer.Interval = 30;
             wheelEndTimer.Tick += WheelEndTimer_Tick;            
@@ -94,7 +94,7 @@ namespace Plotter4
             axes.Add(axis);
         }  
 
-        public void SetTargetControl(Control c, Control.ControlCollection ControlsToCaptureMouseWheel)
+        public void SetTargetControl(Control c)
         {
             if (control != null) control.Paint -= Draw;
             control = c;
@@ -106,10 +106,7 @@ namespace Plotter4
             c.MouseMove += C_MouseMoveFocusCap;
             c.MouseWheel += C_MouseWheel;
             c.MouseDown += C_MouseDown;
-            c.MouseUp += C_MouseUp;            
-
-            foreach (Control cc in ControlsToCaptureMouseWheel)
-                cc.MouseWheel += C_MouseWheel;
+            c.MouseUp += C_MouseUp;                       
         }
 
         private void C_MouseMoveFocusCap(object sender, MouseEventArgs e)
@@ -228,6 +225,13 @@ namespace Plotter4
 
                 //((Form)control).Text = ds.log;
             }            
+        }
+
+        //Add DrawStruct
+        public void AddDrawObject(DrawStruct ds)
+        {
+            dss.Add(ds);
+            control.Invalidate();
         }
 
         //Parse functions
