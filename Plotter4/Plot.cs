@@ -7,10 +7,12 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.IO;
+using System.ComponentModel;
 
 namespace Plotter4
 {
-    abstract class Plot
+
+    class Plot
     {
         public List<DrawStruct> dss = new List<DrawStruct>();
         protected Matrix m = new Matrix();
@@ -44,6 +46,36 @@ namespace Plotter4
             new Pen(Color.Brown, 2),
             new Pen(Color.SandyBrown, 2)
         };
+
+        #region PublicProperties
+        [Category("Graphics options"),DefaultValue(SmoothingMode.None), Description("Mode of plot's smoothing")]
+        public SmoothingMode Smoothing_Mode
+        {
+            get { return graphicsProps.SmoothingMode; }
+            set { graphicsProps.SmoothingMode = value; control.Invalidate(); }
+        }
+        
+        [Category("Graphics options"), DefaultValue(CompositingMode.SourceOver), Description("Mode of plot's compositing")]
+        public CompositingMode Compositing_Mode
+        {
+            get { return graphicsProps.CompositingMode; }
+            set { graphicsProps.CompositingMode = value; control.Invalidate(); }
+        }
+
+        [Category("Graphics options"), DefaultValue(CompositingQuality.Default), Description("Quality of plot's compositing")]
+        public CompositingQuality Compositing_Quality
+        {
+            get { return graphicsProps.CompositingQuality; }
+            set { graphicsProps.CompositingQuality = value; control.Invalidate(); }
+        }
+
+        [Category("Graphics options"), DefaultValue(InterpolationMode.Default), Description("Mode of plot's interpolation")]
+        public InterpolationMode Interpolation_Mode
+        {
+            get { return graphicsProps.InterpolationMode; }
+            set { graphicsProps.InterpolationMode = value; control.Invalidate(); }
+        }
+        #endregion
 
         public Plot(Control c, Control.ControlCollection ControlsToCaptureMouseWheel)
         {

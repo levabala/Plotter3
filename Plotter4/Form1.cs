@@ -22,12 +22,6 @@ namespace Plotter4
         public Form1()
         {
             InitializeComponent();                        
-            /*InterpolationModeCB.SelectedValueChanged += InterpolationModeCB_SelectedValueChanged;
-            CompositingModeCB.SelectedValueChanged += CompositingModeCB_SelectedValueChanged;
-            CompositingQualityCB.SelectedValueChanged += CompositingQualityCB_SelectedValueChanged;
-            SmoothingModeCB.SelectedValueChanged += SmoothingModeCB_SelectedValueChanged;
-            ViewStyleCB.SelectedValueChanged += ViewStyleCB_SelectedValueChanged;*/
-
             PlotsTreeView.AfterSelect += PlotsTreeView_AfterSelect;
         }
 
@@ -35,41 +29,9 @@ namespace Plotter4
         {
             if (e.Node.Level == 0)
             {
-                SmoothingModeCB.SelectedValue = ((Plot)e.Node.Tag).graphicsProps.SmoothingMode;
-                CompositingQualityCB.SelectedValue = ((Plot)e.Node.Tag).graphicsProps.SmoothingMode;
-                SmoothingModeCB.SelectedValue = ((Plot)e.Node.Tag).graphicsProps.SmoothingMode;
-                SmoothingModeCB.SelectedValue = ((Plot)e.Node.Tag).graphicsProps.SmoothingMode;
+                
             }
         }
-
-        private void ViewStyleCB_SelectedValueChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        /*private void SmoothingModeCB_SelectedValueChanged(object sender, EventArgs e)
-        {
-            
-            if ((SmoothingMode)SmoothingModeCB.SelectedValue != SmoothingMode.Invalid)
-                ((Plot)DrawStructsList.SelectedValue).graphicsProps.SmoothingMode = (SmoothingMode)SmoothingModeCB.SelectedValue;
-        }
-
-        private void CompositingQualityCB_SelectedValueChanged(object sender, EventArgs e)
-        {
-            if ((CompositingQuality)CompositingQualityCB.SelectedValue != CompositingQuality.Invalid)
-                ((Plot)DrawStructsList.SelectedValue).graphicsProps.CompositingQuality = (CompositingQuality)CompositingQualityCB.SelectedValue;
-        }
-
-        private void CompositingModeCB_SelectedValueChanged(object sender, EventArgs e)
-        {
-            ((Plot)DrawStructsList.SelectedValue).graphicsProps.CompositingMode = (CompositingMode)CompositingModeCB.SelectedValue;
-        }
-
-        private void InterpolationModeCB_SelectedValueChanged(object sender, EventArgs e)
-        {
-            if ((InterpolationMode)InterpolationModeCB.SelectedValue != InterpolationMode.Invalid)
-                ((Plot)DrawStructsList.SelectedValue).graphicsProps.InterpolationMode = (InterpolationMode)InterpolationModeCB.SelectedValue;
-        }*/
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -86,14 +48,8 @@ namespace Plotter4
             p.AddAxisControl(internalAxis2);
             p.Parse(path, signals.ToArray(), ProgressCallBack);
 
-            //init graphic changers                        
-            //PlotsTreeView.DataSource = new List<Plot>() { p };
-            ViewStyleCB.DataSource = Enum.GetValues(typeof(ViewStyle));            
-
-            CompositingModeCB.DataSource = Enum.GetValues(typeof(CompositingMode));
-            CompositingQualityCB.DataSource = Enum.GetValues(typeof(CompositingQuality));
-            SmoothingModeCB.DataSource = Enum.GetValues(typeof(SmoothingMode));
-            InterpolationModeCB.DataSource = Enum.GetValues(typeof(InterpolationMode));
+            //init graphic changers                                    
+            propertyGrid1.SelectedObject = p;     
         }        
 
         public void ProgressCallBack(double progress)
