@@ -39,6 +39,9 @@ namespace Plotter4
                        
             //Command Line Args Parsing
             string[] args = Environment.GetCommandLineArgs();            
+            
+            if (args.Length < 2) { Close(); return; }
+            
             string path = args[1];
             List<string> signals = new List<string>();
             for (int i = 2; i < args.Length; i++)
